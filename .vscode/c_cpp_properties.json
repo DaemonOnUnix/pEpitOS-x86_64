@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${default}",
+                "${workspaceFolder}/arch/x86_64/include/"
+            ],
+            "defines": [],
+            "cStandard": "c17"
+        }
+    ],
+    "version": 4
+}
