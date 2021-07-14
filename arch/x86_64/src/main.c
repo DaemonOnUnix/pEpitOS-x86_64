@@ -18,9 +18,14 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     string to_print = string("[INFO] booted successfully.\n");
 
-    strprint(to_print);
-    roprint("[PANIC] Halting.\n");
-    printf("Hello {d}|{s}!", 1, "test");
+    LOG_OK("Booted successfully.")
+
+    // strprint(to_print);
+    // roprint("[PANIC] Halting.\n");
+    // printf("Hello {d}|{s}!\n", 1, "test");
+
+    LOG_ERR("Todo : GDT.");
+    LOG_PANIC("Halting...");
 
     for (;;) {
         asm ("hlt");
