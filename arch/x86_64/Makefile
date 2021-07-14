@@ -33,11 +33,11 @@ OBJ    += $(CFILES:.c=.o)
 all: NODEBUG
 
 NODEBUG: $(KERNEL).iso
-	@qemu-system-x86_64 -cdrom $< -no-reboot -monitor stdio -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35 
+	@qemu-system-x86_64 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio
 
 DEBUG: $(KERNEL).iso
 	#@bochs
-	@qemu-system-x86_64 -S -gdb tcp::9000 -cdrom $< -no-reboot -monitor stdio -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35 
+	@qemu-system-x86_64 -S -gdb tcp::9000 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35 -serial mon:stdio
 
 $(KERNEL).iso: $(KERNEL).elf
 	@# Download the latest Limine binary release.

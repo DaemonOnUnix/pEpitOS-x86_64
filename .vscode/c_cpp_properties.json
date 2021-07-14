@@ -1,13 +1,36 @@
+/*{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${default}",
+                "${workspaceFolder}/arch/x86_64/include/",
+                "${workspaceFolder}/arch/x86_64/include/*"
+            ],
+            "defines": [],
+            "cStandard": "gnu11",
+            "intelliSenseMode": "clang-x64",
+            "compilerPath": "/usr/bin/gcc-9",
+            "browse": {
+                "path": ["${workspaceFolder}", "${workspaceFolder}/arch/x86_64/include", "${default}"],
+                "limitSymbolsToIncludedHeaders": true,
+                "databaseFilename": ""
+              }
+        }
+    ],
+    "version": 4
+}*/
 {
     "configurations": [
         {
             "name": "Linux",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/arch/x86_64/include/"
+                "${workspaceFolder}/arch/x86_64/include"
             ],
             "defines": [],
-            "cStandard": "c17"
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c99"
         }
     ],
     "version": 4

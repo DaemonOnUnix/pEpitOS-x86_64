@@ -1,5 +1,6 @@
 #include "thirdparties/stivale2.h"
 #include "freestanding.h"
+#include "log/log.h"
 
 static uint8_t stack[8192];
 
@@ -49,6 +50,8 @@ void _start(struct stivale2_struct *stivale2_struct) {
     // We should now be able to call the above function pointer to print out
     // a simple "Hello World" to screen.
     term_write("Hello World", 11);
+    // com_initialize(COM1);
+    com_write(COM1, "Hello World", 11);
 
     // We're done, just hang...
     for (;;) {
