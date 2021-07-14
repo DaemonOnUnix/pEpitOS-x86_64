@@ -1,5 +1,5 @@
 ARCH=x86_64
-TARGET=DEBUG
+TARGET=NODEBUG
 
 all:
 	@$(MAKE) $(TARGET) -C arch/$(ARCH) -s

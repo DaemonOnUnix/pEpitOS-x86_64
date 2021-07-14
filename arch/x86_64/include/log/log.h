@@ -67,4 +67,11 @@ enum com_line_status_bit
 void com_initialize(enum com_port port);
 size_t com_write(enum com_port port, void const *buffer, size_t size);
 
+#define roprint(x) com_write(COM1, x, sizeof(x));
+#define strprint(x) com_write(COM1, (x).data, (x).len);
+
+void sprintf(char *format, char *buff, va_list args);
+void printf(char *format, ...);
+
+
 #endif
