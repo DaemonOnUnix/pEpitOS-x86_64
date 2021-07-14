@@ -1,6 +1,7 @@
 #include "thirdparties/stivale2.h"
 #include "freestanding.h"
 #include "log/log.h"
+#include "string/string.h"
 
 static uint8_t stack[8192];
 
@@ -45,13 +46,16 @@ void _start(struct stivale2_struct *stivale2_struct) {
     // Now, let's assign this pointer to a function pointer which
     // matches the prototype described in the stivale2 specification for
     // the stivale2_term_write function.
-    void (*term_write)(const char *string, size_t length) = term_write_ptr;
+    // void (*term_write)(const char *string, size_t length) = term_write_ptr;
 
     // We should now be able to call the above function pointer to print out
     // a simple "Hello World" to screen.
-    term_write("Hello World", 11);
+    // term_write("Hello World", 11);
     // com_initialize(COM1);
-    com_write(COM1, "Hello World", 11);
+#define log(x) com_write(COM1, x, sizeof(x));
+    //com_write(COM1, "\n", 12);
+    string to_print = string("booted successfully.");
+    com_write(COM1, to_print.data, to_print.len);
 
     // We're done, just hang...
     for (;;) {
