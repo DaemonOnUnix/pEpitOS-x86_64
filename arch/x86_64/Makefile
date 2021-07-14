@@ -23,8 +23,8 @@ INTERNALCFLAGS  :=                  \
 	-masm=intel \
 	-m64
 
-CFILES := $(shell find ./ -type f -name '*.c')
-SFILES := $(shell find ./ -type f -name '*.s')
+CFILES := $(shell find ./src -type f -name '*.c')
+SFILES := $(shell find ./src -type f -name '*.s')
 OBJ    := $(SFILES:.s=.o)
 OBJ    += $(CFILES:.c=.o)
 
@@ -39,11 +39,7 @@ DEBUG: $(KERNEL).iso
 	#@bochs
 	@qemu-system-x86_64 -S -gdb tcp::9000 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35 -serial mon:stdio
 
-$(KERNEL).iso: $(KERNEL).elf
-	@# Download the latest Limine binary release.
-	@git clone https://github.com/limine-bootloader/limine.git --branch=v2.0-branch-binary --depth=1
-	@# Build limine-install.
-	@make -C limine
+$(KERNEL).iso: $(KERNEL).elf limine/Makefile
 	@# Create a directory which will be our ISO root.
 	@mkdir -p iso_root
 	@# Copy the relevant files over.
@@ -53,16 +49,27 @@ $(KERNEL).iso: $(KERNEL).elf
 			-no-emul-boot -boot-load-size 4 -boot-info-table \
 			-eltorito-alt-boot -e limine-eltorito-efi.bin \
 			-no-emul-boot iso_root -o $(KERNEL).iso
-	@rm -rf limine iso_root
+	@rm -rf iso_root
 
 $(KERNEL).elf: $(OBJ)
 	ld $(INTERNALLDFLAGS) $(OBJ) -o $@
 
-%.o: %.c
+limine/Makefile:
+	@# Download the latest Limine binary release.
+	@git clone https://github.com/limine-bootloader/limine.git --branch=v2.0-branch-binary --depth=1
+	@# Build limine-install.
+	@make -C limine
+
+%.o: %.c .force
 	@$(CC) -o $@ $(CFLAGS) $(INTERNALCFLAGS) -c $<
 
-%.o: %.s
+%.o: %.s .force
 	@nasm $(ASMPARAM) -o $@ $<
 
 clean:
-	@rm -rf $(KERNEL).elf $(OBJ) image.hdd $(KERNEL).iso limine log.txt iso_root
+	@rm -rf $(KERNEL).elf $(OBJ) image.hdd $(KERNEL).iso log.txt iso_root
+
+clean_deps: clean
+	@rm -rf limine
+
+.force:

@@ -25,9 +25,6 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
     }
 }
 
-
-
-
 void _start(struct stivale2_struct *stivale2_struct) {
     struct stivale2_struct_tag_terminal *term_str_tag;
     term_str_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_TERMINAL_ID);
@@ -40,24 +37,12 @@ void _start(struct stivale2_struct *stivale2_struct) {
         }
     }
 
-    // Let's get the address of the terminal write function.
-    void *term_write_ptr = (void *)term_str_tag->term_write;
-
-    // Now, let's assign this pointer to a function pointer which
-    // matches the prototype described in the stivale2 specification for
-    // the stivale2_term_write function.
-    // void (*term_write)(const char *string, size_t length) = term_write_ptr;
-
-    // We should now be able to call the above function pointer to print out
-    // a simple "Hello World" to screen.
-    // term_write("Hello World", 11);
-    // com_initialize(COM1);
+    //void *term_write_ptr = (void *)term_str_tag->term_write;
 #define log(x) com_write(COM1, x, sizeof(x));
     //com_write(COM1, "\n", 12);
     string to_print = string("booted successfully.");
     com_write(COM1, to_print.data, to_print.len);
 
-    // We're done, just hang...
     for (;;) {
         asm ("hlt");
     }
