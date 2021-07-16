@@ -92,5 +92,6 @@ extern void tss_flush();
     };
 #endif
 
+void setup_gdt();
 
 #endif

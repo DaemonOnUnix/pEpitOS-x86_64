@@ -3,6 +3,7 @@
 #include "log/log.h"
 #include "string/string.h"
 #include "thirdparties/stivalemgr.h"
+#include "tables/gdt.h"
 
 void _start(struct stivale2_struct *stivale2_struct) {
 
@@ -38,6 +39,7 @@ void _start(struct stivale2_struct *stivale2_struct) {
     }
 
     LOG_ERR("Todo : GDT.");
+    setup_gdt();
     LOG_PANIC("Halting...");
 
 

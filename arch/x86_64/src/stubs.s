@@ -18,21 +18,18 @@ idt_flush:
     ret
 
 
-global gdt_flush
-gdt_flush:
+global load_gdt
+load_gdt:
     lgdt [rdi]
-    xchg bx, bx
     mov ax, 0x10
+    mov ss, ax
     mov ds, ax
     mov es, ax
-    mov fs, ax
-    mov gs, ax
-    mov ss, ax
+    mov rax, qword .trampoline
     push qword 0x8
-    push qword trampoline
-    retfq
-
-trampoline:
+    push rax
+    o64 retf
+.trampoline:
     ret
 
 [GLOBAL tss_flush]    ; Allows our C code to call tss_flush().

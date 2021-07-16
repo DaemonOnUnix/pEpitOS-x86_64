@@ -1,19 +1,79 @@
 #include "tables/gdt.h"
 #include "freestanding.h"
+#include "log/log.h"
 
-#if 0
+#define nGDT_ENTRIES 3
 
-GDT::GdtEntry gdt_entries[GDT::size];
+#define GDT_SEGMENT (0b00010000)
+#define GDT_PRESENT (0b10000000)
+#define GDT_USER (0b01100000)
+#define GDT_EXECUTABLE (0b00001000)
+#define GDT_READWRITE (0b00000010)
+#define GDT_LONG_MODE_GRANULARITY 0b0010
+#define GDT_FLAGS 0b1100
 
-void GDT::GDT::init(){
-	gdt_ptr.limit = (sizeof(GdtEntry)*size)-1;
-	gdt_ptr.base = (uint64_t)gdt_entries;
-	// asm volatile("xchg bx, bx");
-	gdt_entries[0] = {0, 0, 0, 0}; // null descriptor
-	gdt_entries[1] = {0, 0xFFFFFFFF, GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_EXECUTABLE, GDT_LONG_MODE_GRANULARITY};
-	gdt_entries[2] = {0, 0xFFFFFFFF, GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE, 0};
-	gdt_entries[3] = {0, 0xFFFFFFFF, GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_EXECUTABLE | GDT_USER, GDT_LONG_MODE_GRANULARITY};
-	gdt_entries[4] = {0, 0xFFFFFFFF, GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_USER, 0};
+#define GDT_KERNEL_CODE (1)
+#define GDT_KERNEL_DATA (2)
+#define GDT_USER_DATA (3)
+#define GDT_USER_CODE (4)
+
+#define GDT_RING_3 (3)
+
+
+typedef struct {
+    uint16_t limit0_15;
+    uint16_t base0_15;
+    uint8_t base16_23;
+    uint8_t flags;
+    uint8_t limit16_19 : 4;
+    uint8_t granularity : 4;
+    uint8_t base24_31;
+} __attribute__((packed)) gdt_entry;
+
+typedef struct {
+	gdt_entry entries[nGDT_ENTRIES];
+} __attribute__((packed)) gdt_t;
+
+typedef struct {
+    uint16_t size;
+    uint64_t offset;
+} __attribute__((packed)) gdt_descriptor;
+
+gdt_entry create_gdt_entry(uint32_t base, uint32_t limit, uint8_t granularity, uint8_t flags){
+    return (gdt_entry){
+        .limit0_15 = (uint16_t)((limit)&0xFFFF),
+        .base0_15 = (uint16_t)((base)&0xFFFF),
+        .base16_23 = (uint8_t)(((base) >> 16) & 0xFF),
+        .flags = (flags),
+        .limit16_19 = ((limit) >> 16) & 0x0F,
+        .granularity = (granularity),
+        .base24_31 = (uint8_t)(((base) >> 24) & 0xFF),
+    };
 }
 
-#endif
+#define quick_entry(flags, granularity) (create_gdt_entry(0, 0, granularity, flags))
+
+static gdt_t gdt;
+static gdt_descriptor gdt_d;
+
+void setup_gdt(){
+	LOG_INFO("Initializing GDT...");
+	gdt.entries[0] = create_gdt_entry(0, 0, 0, 0);
+	LOG_INFO("Null descriptor created, at offset {x}.", 0);
+
+    gdt.entries[GDT_KERNEL_CODE] = quick_entry(GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_EXECUTABLE, GDT_LONG_MODE_GRANULARITY);
+    LOG_INFO("Kernel code descriptor created, at offset {x}.", GDT_KERNEL_CODE*sizeof(gdt_entry));
+
+	gdt.entries[GDT_KERNEL_DATA] = quick_entry(GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE, 0);
+	LOG_INFO("Kernel data descriptor created, at offset {x}.", GDT_KERNEL_DATA*sizeof(gdt_entry));
+
+	gdt_d.offset = (uint64_t)(&gdt);
+	gdt_d.size = sizeof(gdt_t) -1;
+	LOG_INFO("GDT Descriptor created, at {x}. GDT at {x} with size {d}.", (uint64_t)(&gdt_d), gdt_d.offset, gdt_d.size);
+
+	extern void load_gdt(gdt_descriptor* desc);
+	load_gdt(&gdt_d);
+
+	LOG_OK("GDT loaded successfully.");
+
+}
