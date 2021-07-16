@@ -38,8 +38,8 @@ void _start(struct stivale2_struct *stivale2_struct) {
         }
     }
 
-    LOG_ERR("Todo : GDT.");
     setup_gdt();
+    LOG_ERR("Todo : IDT.");
     LOG_PANIC("Halting...");
 
 
