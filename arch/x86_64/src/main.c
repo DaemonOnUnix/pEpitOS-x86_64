@@ -13,6 +13,7 @@ void _start(struct stivale2_struct *stivale2_struct) {
     framebuffer_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
 
     LOG_OK("Booted successfully.")
+    LOG_INFO("Stivale2 struct at {x}", stivale2_struct);
     LOG_INFO("Size of Framebuffer : {d} x {d}", framebuffer_tag->framebuffer_width, framebuffer_tag->framebuffer_height);
     LOG_INFO("Framebuffer at {x}", framebuffer_tag->framebuffer_addr);
 
@@ -27,11 +28,10 @@ void _start(struct stivale2_struct *stivale2_struct) {
     // asm volatile("int 127");
     // LOG_ERR("Testing breakpoint.");
 
-    asm volatile("int 3");
-    LOG_OK("Returned from breakpoint.");
+    // asm volatile("int 3");
+    // LOG_OK("Returned from breakpoint.");
 
-    char* pikalul = (char*)0xffdeadbeef;
-    pikalul[0] = 97;
+    // asm volatile("jmp %0"::"a"(stivale2_struct));
 
     LOG_ERR("Todo : Physical Memory Manager.");
 
