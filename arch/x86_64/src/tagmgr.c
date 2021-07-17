@@ -24,13 +24,14 @@ void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
     }
 }
 
+/*
 static struct stivale2_header_tag_terminal terminal_hdr_tag = {
     .tag = {
         .identifier = STIVALE2_HEADER_TAG_TERMINAL_ID,
         .next = 0
     },
     .flags = 0
-};
+};*/
 
 static struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
     // Same as above.

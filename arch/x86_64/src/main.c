@@ -19,9 +19,12 @@ void _start(struct stivale2_struct *stivale2_struct) {
     setup_gdt();
     setup_idt();
     attach_kernel_exceptions();
+
+    LOG_ERR("Testing breakpoint.");
     asm volatile("int 3");
-    asm volatile("int 3");
-    volatile int a = 5 / 0;
+    LOG_OK("Returned from breakpoint.");
+
+    LOG_ERR("Todo : Physical Memory Manager.");
 
     LOG_PANIC("Halting...");
     while(1) asm volatile("hlt");

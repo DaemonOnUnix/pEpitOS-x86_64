@@ -7,7 +7,7 @@
 
 typedef struct {
     uint16_t size;
-    uint64_t offset;
+    uintptr_t offset;
 } PACKED idt_descriptor_t;
 
 typedef struct {
@@ -41,10 +41,10 @@ idt_entry create_idt_entry(uintptr_t handler, uint8_t ist, uint8_t idt_flags) {
 static idt_t idt = {};
 static idt_descriptor_t idt_descriptor = {
     .size = sizeof(idt_entry) * nIDT_ENTRY,
-    .offset = &idt
+    .offset = (uintptr_t)(&idt)
 };
 
-void(*isr[256])(stackframe*);
+void(*isr[256])(volatile stackframe*);
 
 extern void  isr0(void);
 extern void  isr1(void);
@@ -146,7 +146,7 @@ void setup_idt(void) {
     LOG_OK("IDT loaded, IDT descriptor at {x}, IDT at {x} of size {d}", &idt_descriptor, idt_descriptor.offset, idt_descriptor.size);
 }
 
-void log_stackframe(stackframe* regs){
+void log_stackframe(volatile stackframe* regs){
     LOG_INFO("Stackframe :\nr15 : {x}\tr14 : {x}\tr13 : {x}\tr12 : {x}\nr11 : {x}\tr10 : {x}\tr9 : {x}\tr8 : {x}\nrbp : {x}\t"
         "rdi : {x}\trsi : {x}\nrdx : {x}\trcx : {x}\trbx : {x}\nrax : {x}\trsp : {x}\tint_no : {x}\t err_code : {x}\nrip : {x}\tcs : {x}\trflags : {x}\nuseresp : {x} \tss : {x}", 
         regs->r15, 
@@ -180,7 +180,7 @@ void isr_handler(volatile stackframe regs) {
     // LOG_INFO("ISR handler called...");
     // log_stackframe(&regs);
     // LOG_INFO("Interrupt number : {d}.", regs.int_no);
-    void(*cur_isr)(stackframe*) = isr[regs.int_no];
+    void(*cur_isr)(volatile stackframe*) = isr[regs.int_no];
 
     LOG_INFO("Interrupt number {d}, ISR to call at : {x}", regs.int_no, cur_isr);
 
@@ -194,7 +194,7 @@ void isr_handler(volatile stackframe regs) {
     }
 }
 
-void attach_isr(uint8_t interrupt_number, void(*isr_to_add)(stackframe*)) {
+void attach_isr(uint8_t interrupt_number, void(*isr_to_add)(volatile stackframe*)) {
     isr[interrupt_number] = isr_to_add;
     LOG_INFO("Attached isr at {x} to interrupt number {d}.", isr_to_add, interrupt_number);
 }
