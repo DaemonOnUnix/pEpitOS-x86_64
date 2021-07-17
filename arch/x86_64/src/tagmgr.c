@@ -52,10 +52,19 @@ static struct stivale2_header_tag_framebuffer framebuffer_hdr_tag = {
     .framebuffer_bpp    = 32
 };
 
+static struct stivale2_struct_tag_memmap memmap_tag = {
+    .tag = {
+        .identifier = STIVALE2_STRUCT_TAG_MEMMAP_ID,
+        .next = (uint64_t)&framebuffer_hdr_tag
+    },
+    .entries = 0,
+    .memmap = 0
+};
+
 __attribute__((section(".stivale2hdr"), used)) 
 static struct stivale2_header stivale_hdr = {
     .entry_point = (uint64_t)(_start),
     .stack = (uintptr_t)stack + sizeof(stack),
     .flags = 0,
-    .tags = (uintptr_t)&framebuffer_hdr_tag
+    .tags = (uintptr_t)&memmap_tag
 };

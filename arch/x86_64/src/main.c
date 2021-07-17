@@ -16,6 +16,14 @@ void _start(struct stivale2_struct *stivale2_struct) {
     LOG_INFO("Stivale2 struct at {x}", stivale2_struct);
     LOG_INFO("Size of Framebuffer : {d} x {d}", framebuffer_tag->framebuffer_width, framebuffer_tag->framebuffer_height);
     LOG_INFO("Framebuffer at {x}", framebuffer_tag->framebuffer_addr);
+    
+    struct stivale2_struct_tag_memmap * memmap_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
+    LOG_INFO("Memory map at {x}, has {d} entries.", memmap_tag, memmap_tag->entries);
+
+    while(memmap_tag->entries-->0){
+        struct stivale2_mmap_entry x = memmap_tag->memmap[memmap_tag->entries];
+        LOG_INFO("Base : {x}, Length : {d}, Type : {d}, Unused : {d}", x.base, x.length, x.type, x.unused);
+    }
 
     setup_gdt();
     setup_idt();
