@@ -108,6 +108,8 @@ ISR_NOERRCODE 28
 ISR_NOERRCODE 29
 ISR_NOERRCODE 30
 ISR_NOERRCODE 31
+ISR_NOERRCODE 127
+ISR_NOERRCODE 128
 
 isr_common_stub:
     save_context
@@ -161,7 +163,6 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
-ISR_NOERRCODE 128
 
 irq_common_stub:
    save_context

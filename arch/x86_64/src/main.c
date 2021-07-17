@@ -20,9 +20,18 @@ void _start(struct stivale2_struct *stivale2_struct) {
     setup_idt();
     attach_kernel_exceptions();
 
-    LOG_ERR("Testing breakpoint.");
+    // LOG_ERR("Testing debug mode");
+    // asm volatile("int 127");
+    // volatile int b = 3 + 4;
+    // volatile int c = 3 * 4;
+    // asm volatile("int 127");
+    // LOG_ERR("Testing breakpoint.");
+
     asm volatile("int 3");
     LOG_OK("Returned from breakpoint.");
+
+    char* pikalul = (char*)0xffdeadbeef;
+    pikalul[0] = 97;
 
     LOG_ERR("Todo : Physical Memory Manager.");
 
