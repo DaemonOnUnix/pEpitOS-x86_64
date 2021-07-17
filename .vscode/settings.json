@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "*.s": "platformio-debug.asm",
+        "queue": "cpp"
+    }
+}

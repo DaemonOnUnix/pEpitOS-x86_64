@@ -12,11 +12,6 @@
 #define GDT_LONG_MODE_GRANULARITY 0b0010
 #define GDT_FLAGS 0b1100
 
-#define GDT_KERNEL_CODE (1)
-#define GDT_KERNEL_DATA (2)
-#define GDT_USER_DATA (3)
-#define GDT_USER_CODE (4)
-
 #define GDT_RING_3 (3)
 
 
@@ -28,16 +23,16 @@ typedef struct {
     uint8_t limit16_19 : 4;
     uint8_t granularity : 4;
     uint8_t base24_31;
-} __attribute__((packed)) gdt_entry;
+} PACKED gdt_entry;
 
 typedef struct {
 	gdt_entry entries[nGDT_ENTRIES];
-} __attribute__((packed)) gdt_t;
+} PACKED gdt_t;
 
 typedef struct {
     uint16_t size;
     uint64_t offset;
-} __attribute__((packed)) gdt_descriptor;
+} PACKED gdt_descriptor;
 
 gdt_entry create_gdt_entry(uint32_t base, uint32_t limit, uint8_t granularity, uint8_t flags){
     return (gdt_entry){

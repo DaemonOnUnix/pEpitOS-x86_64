@@ -2,6 +2,7 @@
 #define kTABLES_IDT
 
 #include "freestanding.h"
+#include "interrupts/stackframe.h"
 
 static const uint32_t IDT_DESC_PRESENT = 0x80;
 
@@ -32,13 +33,8 @@ typedef struct{
     uint16_t handlerAddressHighBits;
 } GateDescriptor;
 
-template<size_t size>
-class IDT{
+void setup_idt(void);
 
-public:
-    IDT();
-    void attach_function(void (*handler)())
-};
-
+void attach_isr(uint8_t interrupt_number, void(*isr_to_add)(stackframe*));
 
 #endif

@@ -8,7 +8,7 @@ char* dec(unsigned long long x, char *s) {
 }
 
 char* decX(unsigned long long x, char *s) {
-    char list[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    char list[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     *--s = 0;
     if (!x)
         *--s = '0';

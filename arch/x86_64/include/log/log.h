@@ -94,9 +94,9 @@ void printf(char *format, ...);
         log(__LINE__);        \
         log(" -> ");
 
-#define LOG_OK(...)    roprint(OK_STRING);    printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");
-#define LOG_ERR(...)   roprint(ERR_STRING);   printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");
-#define LOG_INFO(...)  roprint(INFO_STRING);  printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");
-#define LOG_PANIC(...) roprint(PANIC_STRING); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");
+#define LOG_OK(...)    {roprint(OK_STRING);    printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");}
+#define LOG_ERR(...)   {roprint(ERR_STRING);   printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");}
+#define LOG_INFO(...)  {roprint(INFO_STRING);  printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");}
+#define LOG_PANIC(...) {roprint(PANIC_STRING); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");}
 
 #endif
