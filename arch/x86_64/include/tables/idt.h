@@ -36,5 +36,6 @@ typedef struct{
 void setup_idt(void);
 
 void attach_isr(uint8_t interrupt_number, void(*isr_to_add)(stackframe*));
+void log_stackframe(stackframe* regs);
 
 #endif

@@ -177,18 +177,19 @@ void log_stackframe(stackframe* regs){
 
 void isr_handler(volatile stackframe regs) {
     
-    LOG_INFO("ISR handler called...");
-    log_stackframe(&regs);
-    LOG_INFO("Interrupt number : {d}.", regs.int_no);
+    // LOG_INFO("ISR handler called...");
+    // log_stackframe(&regs);
+    // LOG_INFO("Interrupt number : {d}.", regs.int_no);
     void(*cur_isr)(stackframe*) = isr[regs.int_no];
 
-    LOG_INFO("ISR to call at : {x}", cur_isr);
+    LOG_INFO("Interrupt number {d}, ISR to call at : {x}", regs.int_no, cur_isr);
 
 
 	if (cur_isr != 0){
 		cur_isr(&regs);
 	} else {
         LOG_PANIC("Calling null isr");
+        log_stackframe(&regs);
         while(1) asm volatile("hlt");
     }
 }
