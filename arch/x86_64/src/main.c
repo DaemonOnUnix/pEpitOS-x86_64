@@ -31,11 +31,11 @@ void _start(struct stivale2_struct *stivale2_struct) {
     attach_kernel_exceptions();
     set_memory_map(memmap_tag);
 
-    uint64_t size = get_size_in_bits(0x1000);
+    uint64_t size = get_size_in_bits(0x200000);
 
     uintptr_t first_frame = get_frame();
     
-    for(size_t i = 0; i < size/0x1000; i++)
+    for(size_t i = 0; i < size/0x200000; i++)
        get_frame();
     
 

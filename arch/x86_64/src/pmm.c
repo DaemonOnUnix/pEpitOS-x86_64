@@ -12,7 +12,7 @@ static struct stivale2_mmap_entry available[20] = {0};
 static uint64_t* bitmap_addr = 0;
 
 uint64_t align(uint64_t addr){
-    uint64_t temp = addr & (((uint64_t)-1) << pg_size);
+    uint64_t temp = addr & (((uint64_t)-1ll) * pg_size);
     if(temp == addr)
         return temp;
     return temp + pg_size;
@@ -38,6 +38,8 @@ uintptr_t get_frame(){
         for(size_t i = prev_i; available[i].length; i++) {
             if(i > prev_i)
                 number_of_frames_without_bitmap_in_c = 0;
+            LOG_INFO("page size : {x}", pg_size);
+            LOG_INFO("align of {x} : {x}", available[i].base, align(available[i].base));
             uint64_t current_frame = align(available[i].base) + ((number_of_frames_without_bitmap_in_c) * pg_size);
             if(current_frame < align(available[i].base) + available[i].length - pg_size){
                 number_of_frames_without_bitmap_in_c++;
