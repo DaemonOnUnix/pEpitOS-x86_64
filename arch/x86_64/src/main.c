@@ -42,11 +42,11 @@ void _start(struct stivale2_struct *stivale2_struct) {
 #define physical_to_stivale(x) ((x) + 0xffffffff80000000)
 
     init_pmm(physical_to_stivale(first_frame));
-    for(;;){
-        uintptr_t got_frame = get_frame();
-        LOG_INFO("New frame at {x}", got_frame);
+    // for(;;){
+    //     uintptr_t got_frame = get_frame();
+    //     LOG_INFO("New frame at {x}", got_frame);
 
-    }
+    // }
     
     
     // get_frame();
@@ -65,7 +65,7 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     // asm volatile("jmp %0"::"a"(stivale2_struct));
 
-    LOG_ERR("Todo : Physical Memory Manager.");
+    LOG_ERR("Todo : Virtual Memory Manager.");
 
     LOG_PANIC("Halting...");
     while(1) asm volatile("hlt");
