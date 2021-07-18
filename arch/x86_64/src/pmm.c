@@ -1,5 +1,6 @@
 #include "pmm/pmm.h"
 #include "log/log.h"
+#include "vmm/vmm.h"
 
 static struct stivale2_mmap_entry * memmap = 0;
 static uint64_t entry_number = 0;
@@ -38,14 +39,16 @@ uintptr_t get_frame(){
         for(size_t i = prev_i; available[i].length; i++) {
             if(i > prev_i)
                 number_of_frames_without_bitmap_in_c = 0;
-            LOG_INFO("page size : {x}", pg_size);
-            LOG_INFO("align of {x} : {x}", available[i].base, align(available[i].base));
+            // LOG_INFO("page size : {x}", pg_size);
+            // LOG_INFO("align of {x} : {x}", available[i].base, align(available[i].base));
             uint64_t current_frame = align(available[i].base) + ((number_of_frames_without_bitmap_in_c) * pg_size);
             if(current_frame < align(available[i].base) + available[i].length - pg_size){
                 number_of_frames_without_bitmap_in_c++;
                 number_of_frames_without_bitmap++;
                 LOG_INFO("PMM : allocating frame without bitmap, number {d} at {x}.", number_of_frames_without_bitmap, current_frame);
-                LOG_ERR("TODO : clean the allocated frames.");
+                //LOG_ERR("TODO : clean the allocated frames.");
+                for(uint64_t* i = physical_to_stivale(current_frame); (uintptr_t)i < (uintptr_t)physical_to_stivale(current_frame + pg_size); i++)
+                    *i = 0;
                 prev_i = i;
                 return current_frame;
             }
@@ -82,7 +85,7 @@ uintptr_t get_frame(){
 
 void init_pmm(uintptr_t virtual_addr){
     is_bitmap_set = 1;
-    bitmap_addr = virtual_addr;
+    bitmap_addr = (uint64_t*)virtual_addr;
 
     LOG_INFO("Got virtual memory address of bitmap at {x}", bitmap_addr);
 
@@ -97,7 +100,8 @@ void init_pmm(uintptr_t virtual_addr){
         flip_frame(i);
 
     LOG_INFO("{d} frames set to used due to bitmap...", number_of_frames_without_bitmap);
-        
+    
+    LOG_OK("Physical Memory Manager initialized successfully.");
 }
 
 

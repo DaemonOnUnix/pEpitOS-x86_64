@@ -58,7 +58,7 @@ static struct stivale2_struct_tag_memmap memmap_tag = {
         .next = (uint64_t)&framebuffer_hdr_tag
     },
     .entries = 0,
-    .memmap = 0
+    .memmap = {{0}}
 };
 
 __attribute__((section(".stivale2hdr"), used)) 

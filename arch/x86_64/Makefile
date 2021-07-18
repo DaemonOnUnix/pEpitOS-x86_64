@@ -33,7 +33,7 @@ OBJ    += $(CFILES:.c=.o)
 all: NODEBUG
 
 NODEBUG: $(KERNEL).iso
-	@qemu-system-x86_64 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio
+	@qemu-system-x86_64 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 2G
 
 DEBUG: $(KERNEL).iso
 	#@bochs
