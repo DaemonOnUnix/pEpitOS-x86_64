@@ -30,13 +30,28 @@ void _start(struct stivale2_struct *stivale2_struct) {
     setup_idt();
     attach_kernel_exceptions();
     set_memory_map(memmap_tag);
-    get_size_in_bits(0x1000);
+
+    uint64_t size = get_size_in_bits(0x1000);
+
+    uintptr_t first_frame = get_frame();
+    
+    for(size_t i = 0; i < size/0x1000; i++)
+       get_frame();
+    
+
+#define physical_to_stivale(x) ((x) + 0xffffffff80000000)
+
+    init_pmm(physical_to_stivale(first_frame));
+    for(;;){
+        uintptr_t got_frame = get_frame();
+        LOG_INFO("New frame at {x}", got_frame);
+
+    }
+    
+    
     // get_frame();
     // get_frame();
     // get_frame();
-    // get_frame();
-    // for(size_t i = 0; i < 130825; i++)
-    //    get_frame();
 
     // LOG_ERR("Testing debug mode");
     // asm volatile("int 127");

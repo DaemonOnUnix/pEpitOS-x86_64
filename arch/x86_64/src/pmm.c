@@ -9,6 +9,7 @@ static uint64_t nframes = 0;
 static uint64_t number_of_frames_without_bitmap = 0;
 static uint64_t number_of_frames_without_bitmap_in_c = 0;
 static struct stivale2_mmap_entry available[20] = {0};
+static uint64_t* bitmap_addr = 0;
 
 uint64_t align(uint64_t addr){
     uint64_t temp = addr & (((uint64_t)-1) << pg_size);
@@ -16,6 +17,20 @@ uint64_t align(uint64_t addr){
         return temp;
     return temp + pg_size;
 }
+
+void set_frame(uint64_t frame){
+    bitmap_addr[frame/64] |= (1ull << (frame%64));
+}
+
+
+void flip_frame(uint64_t frame){
+    bitmap_addr[frame/64] ^= (1ull << (frame%64));
+}
+
+uint64_t read_frame(uint64_t frame){
+    return (bitmap_addr[frame/64] >> (frame%64))&1;
+}
+
 
 uintptr_t get_frame(){
     static size_t prev_i = 0;
@@ -33,17 +48,57 @@ uintptr_t get_frame(){
                 return current_frame;
             }
         }
-        LOG_PANIC("Not enough memory for allocation.");
-        while(1) asm volatile("hlt");
     } else{
-        LOG_PANIC("Not implemented.");
-        return 0;
+        size_t i = 0;
+        while(i < nframes/64 && bitmap_addr[i] == 0xffffffffffffffff) //== (uint64_t)-1)
+            i++;
+
+        if(i != nframes/64){
+            size_t j = 0;
+            while(bitmap_addr[i] & (1ull << (j)))
+                j++;
+            size_t z = 0;
+            uint64_t cur_frame_n = i * 64 + j;
+            const uint64_t CUR_FRAME_N = cur_frame_n;
+            while(available[z].length){
+                uint64_t current_frame = align(available[z].base) + ((cur_frame_n) * pg_size);
+                if(current_frame < align(available[z].base) + available[z].length - pg_size){
+                    flip_frame(CUR_FRAME_N);
+                    return current_frame;
+                }
+                cur_frame_n -= available[z].length / pg_size;
+                z++;
+            }
+        }
+        
     }
+    LOG_PANIC("Not enough memory for allocation.");
+    asm volatile ("cli");
+    while(1) asm volatile("hlt");
 }
+
 
 void init_pmm(uintptr_t virtual_addr){
     is_bitmap_set = 1;
+    bitmap_addr = virtual_addr;
+
+    LOG_INFO("Got virtual memory address of bitmap at {x}", bitmap_addr);
+
+    for(size_t i = 0; i < (nframes/64)+1; i++)
+        bitmap_addr[i] = 0;
+    
+    LOG_INFO("{d} frames set to unused (0)...", ((nframes/64)+1)*64);
+
+    LOG_INFO("Number of frames previously allocated (without bitmap): {d}", number_of_frames_without_bitmap);
+
+    for(uint64_t i = 0; i < number_of_frames_without_bitmap; i++)
+        flip_frame(i);
+
+    LOG_INFO("{d} frames set to used due to bitmap...", number_of_frames_without_bitmap);
+        
 }
+
+
 
 void set_memory_map(struct stivale2_struct_tag_memmap * memmap_tag){
     LOG_INFO("PMM : got the memory map at {x}, of size {d}", memmap_tag->memmap, memmap_tag->entries);
