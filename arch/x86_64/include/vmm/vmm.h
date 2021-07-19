@@ -12,10 +12,17 @@
 #define mask_l2     0x3FE00000ull
 #define mask_l3   0x3FC0000000ull
 #define mask_l4 0x3FC000000000ull
+#define ARCH_PAGE_SIZE 0x1000
+#define ARCH_N_ENTRY   512
+
 
 size_t virtual_to_physical(size_t addr);
 
 #define stivale_to_physical(x) (void*)(((uint64_t)x) - 0xffffffff80000000ull)
 #define physical_to_stivale(x) (void*)(((uint64_t)x) + 0xffffffff80000000ull)
 
+uint64_t create_page_directory();
+void init_vmm();
+void kmmap(uintptr_t addr, size_t size, uint64_t flags);
+uint64_t craft_addr(uint64_t offset_l4, uint64_t offset_l3, uint64_t offset_l2, uint64_t offset_l1, uint64_t offset_l0);
 #endif

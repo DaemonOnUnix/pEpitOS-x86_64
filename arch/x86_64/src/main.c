@@ -45,6 +45,15 @@ void _start(struct stivale2_struct *stivale2_struct) {
     
 
     init_pmm((uintptr_t)physical_to_stivale(first_frame));
+    init_vmm();
+    asm volatile("mov cr3, %0"::"a"(create_page_directory()));
+    LOG_OK("Page directory created and loaded successfully.");
+    // kmmap(craft_addr(21, 21, 21, 21, 21), 0xF, 2);
+    // char* a = (char*)craft_addr(21, 21, 21, 21, 21);
+    kmmap(0xfdeadbeef, 0xF, 2);
+    
+    char* a = (char*)0xfdeadbeef;
+    a[0] = 5;
     // for(;;){
     //     uintptr_t got_frame = get_frame();
     //     LOG_INFO("New frame at {x}", got_frame);
