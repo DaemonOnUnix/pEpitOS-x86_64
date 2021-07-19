@@ -50,9 +50,12 @@ void _start(struct stivale2_struct *stivale2_struct) {
     LOG_OK("Page directory created and loaded successfully.");
     // kmmap(craft_addr(21, 21, 21, 21, 21), 0xF, 2);
     // char* a = (char*)craft_addr(21, 21, 21, 21, 21);
-    kmmap(0xfdeadbeef, 0xF, 2);
-    
-    char* a = (char*)0xfdeadbeef;
+    kmmap(0xffdeadbeef, 0xF, 2);
+    char* a = (char*)0xffdeadbeef;
+    kmunmap(0xffdeadb000, 0x1000, MEM_TO_UPPER);
+    kmmap(0xffdeadbeef, 0xF, 2);
+    a = (char*)0xffdeadbeef;
+    kmunmap(0xffdeadb000, 0x1000, MEM_TO_UPPER);
     a[0] = 5;
     // for(;;){
     //     uintptr_t got_frame = get_frame();

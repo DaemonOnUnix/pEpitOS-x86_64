@@ -2,6 +2,12 @@
 #include "log/log.h"
 #include "vmm/vmm.h"
 
+typedef struct {
+    uint64_t aligned_base;
+    uint64_t length;
+    uint64_t first_frame_number;
+} localisation_data;
+
 static struct stivale2_mmap_entry * memmap = 0;
 static uint64_t entry_number = 0;
 static uint64_t pg_size = 0;
@@ -10,6 +16,7 @@ static uint64_t nframes = 0;
 static uint64_t number_of_frames_without_bitmap = 0;
 static uint64_t number_of_frames_without_bitmap_in_c = 0;
 static struct stivale2_mmap_entry available[20] = {0};
+static localisation_data loc_datas[20] = {0};
 static uint64_t* bitmap_addr = 0;
 
 uint64_t align(uint64_t addr){
@@ -25,6 +32,7 @@ void set_frame(uint64_t frame){
 
 
 void flip_frame(uint64_t frame){
+    // LOG_INFO("Flipping frame number {d}", frame);
     bitmap_addr[frame/64] ^= (1ull << (frame%64));
 }
 
@@ -100,11 +108,27 @@ void init_pmm(uintptr_t virtual_addr){
         flip_frame(i);
 
     LOG_INFO("{d} frames set to used due to bitmap...", number_of_frames_without_bitmap);
+
+    uint64_t i = 0;
+    uint64_t current_nframes = 0;
+    for(; available[i].length; i++){
+
+        uint64_t base = align(available[i].base);
+
+        loc_datas[i] = (localisation_data){
+            .aligned_base = base,
+            .first_frame_number = current_nframes,
+            .length = available[i].length - (base - available[i].base)
+        };
+
+        current_nframes += loc_datas[i].length / 0x1000;
+
+        LOG_INFO("Chunk informations : Created entry {d} { base:= {x}, start frame index:= {x}, length := {x}",
+             i, loc_datas[i].aligned_base, loc_datas[i].first_frame_number, loc_datas[i].length);
+    }
     
     LOG_OK("Physical Memory Manager initialized successfully.");
 }
-
-
 
 void set_memory_map(struct stivale2_struct_tag_memmap * memmap_tag){
     LOG_INFO("PMM : got the memory map at {x}, of size {d}", memmap_tag->memmap, memmap_tag->entries);
@@ -117,7 +141,6 @@ void set_memory_map(struct stivale2_struct_tag_memmap * memmap_tag){
     }
     LOG_OK("Memory map dump done.");
 }
-
 
 uint64_t get_size_in_bits(uint64_t page_size){
     pg_size = page_size;
@@ -133,4 +156,33 @@ uint64_t get_size_in_bits(uint64_t page_size){
     LOG_INFO("PMM : {d} usable frames of {x} bits.", total_frames, page_size);
     nframes = total_frames;
     return total_frames;
+}
+
+void free_frame(uintptr_t address) {
+    
+    uintptr_t addr = address & CLEAN_BITS_MASK;
+
+    LOG_INFO("PMM : Asking to free address {x}, freeing frame at {x}", address, addr);
+
+    size_t i = 0;
+    while(loc_datas[i].length){
+
+        LOG_INFO("Chunk informations : Examining entry {d} { base:= {x}, start frame index:= {x}, length := {x}",
+             i, loc_datas[i].aligned_base, loc_datas[i].first_frame_number, loc_datas[i].length);
+
+        if(addr >= loc_datas[i].aligned_base + loc_datas[i].length || addr < loc_datas[i].aligned_base){
+            i++;
+            continue;
+        }
+        
+        uint64_t frame_number = loc_datas[i].first_frame_number + (addr - loc_datas[i].aligned_base) / pg_size;
+        LOG_INFO("PMM : Freed frame number {d} matching address {x} in block number {d}.", frame_number, addr, i);
+        // LOG_INFO("{d} + ({x} - {x}) / {d} = {d};", loc_datas[i].first_frame_number, addr, loc_datas[i].aligned_base, pg_size, frame_number);
+
+        flip_frame(frame_number);
+
+
+        i++;
+    }
+
 }
