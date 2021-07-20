@@ -200,7 +200,7 @@ void setup_context_frame(){
 
     LOG_INFO("Current task currently supporting context frame.")
 
-    // asm volatile("push rax; mov rax, cr4; or rax, (1<<9); mov cr4, rax");
+    asm volatile("push rax; mov rax, cr4; or rax, (1<<9); mov cr4, rax");
 
     // asm volatile("fxsave %0;" :: "a"((uint64_t)context_save_addr)); 
 
