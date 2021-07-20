@@ -2,6 +2,7 @@ KERNEL := pEpitOS
 CC = gcc-9
 CFLAGS = -Wall -Wextra -O0 -Iinclude -g
 ASMPARAM = -f elf64 -F dwarf
+BUILD = build
 
 INTERNALLDFLAGS :=     \
 	-nostdlib      \
@@ -23,10 +24,14 @@ INTERNALCFLAGS  :=                  \
 	-masm=intel \
 	-m64
 
+SRCDIRS := $(shell find ./src -type d)
+
 CFILES := $(shell find ./src -type f -name '*.c')
 SFILES := $(shell find ./src -type f -name '*.s')
-OBJ    := $(SFILES:.s=.o)
-OBJ    += $(CFILES:.c=.o)
+OBJ    := $(SFILES:%.s=$(BUILD)/%.o)
+OBJ    += $(CFILES:%.c=$(BUILD)/%.o)
+
+$(shell mkdir -p $(addprefix $(BUILD)/,$(SRCDIRS)))
 
 .PHONY: all clean
  
@@ -60,14 +65,14 @@ limine/Makefile:
 	@# Build limine-install.
 	@make -C limine
 
-%.o: %.c .force
+$(BUILD)/%.o: %.c .force
 	@$(CC) -o $@ $(CFLAGS) $(INTERNALCFLAGS) -c $<
 
-%.o: %.s .force
+$(BUILD)/%.o: %.s .force
 	@nasm $(ASMPARAM) -o $@ $<
 
 clean:
-	@rm -rf $(KERNEL).elf $(OBJ) image.hdd $(KERNEL).iso log.txt iso_root
+	@rm -rf $(KERNEL).elf $(OBJ) image.hdd $(KERNEL).iso $(BUILD) log.txt iso_root
 
 clean_deps: clean
 	@rm -rf limine
