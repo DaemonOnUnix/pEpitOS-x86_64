@@ -113,28 +113,11 @@ ISR_NOERRCODE 128
 
 isr_common_stub:
     save_context
-    ; mov ax, ds
-    ; push rax
 
-    ; mov ax, 0x10
-    ; mov ds, ax
-    ; mov es, ax
-    ; mov fs, ax
-    ; mov gs, ax
-
-    ; mov rdi, rsp
     call isr_handler
-    ; mov rsp, rax
 
-
-    ; pop rax
-    ; mov ds, ax
-    ; mov es, ax
-    ; mov fs, ax
-    ; mov gs, ax
     load_context
-    add rsp, 16 ;check offset later
-    ; sti
+    add rsp, 16
     iretq
 
 %macro IRQ 2

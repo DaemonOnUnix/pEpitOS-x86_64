@@ -43,20 +43,26 @@ void _start(struct stivale2_struct *stivale2_struct) {
     for(size_t i = 0; i < size/LITTLE_PAGES; i++)
        get_frame();
     
-
     init_pmm((uintptr_t)physical_to_stivale(first_frame));
     init_vmm();
+
     asm volatile("mov cr3, %0"::"a"(create_page_directory()));
     LOG_OK("Page directory created and loaded successfully.");
     // kmmap(craft_addr(21, 21, 21, 21, 21), 0xF, 2);
     // char* a = (char*)craft_addr(21, 21, 21, 21, 21);
-    kmmap(0xffdeadbeef, 0xF, 2);
-    char* a = (char*)0xffdeadbeef;
-    kmunmap(0xffdeadb000, 0x1000, MEM_TO_UPPER);
-    kmmap(0xffdeadbeef, 0xF, 2);
-    a = (char*)0xffdeadbeef;
-    kmunmap(0xffdeadb000, 0x1000, MEM_TO_UPPER);
-    a[0] = 5;
+    
+    // kmmap(0xffdeadbeef, 0xF, 2);
+    // char* a = (char*)0xffdeadbeef;
+    // kmunmap(0xffdeadb000, 0x1000, MEM_TO_UPPER);
+
+    // kmmap(0xffdeadbeef, 0xF, 2);
+    // a = (char*)0xffdeadbeef;
+    // kmunmap(0xffdeadb000, 0x1000, MEM_TO_UPPER);
+
+    setup_context_frame();
+    
+    // a[0] = 5;
+
     // for(;;){
     //     uintptr_t got_frame = get_frame();
     //     LOG_INFO("New frame at {x}", got_frame);
@@ -79,8 +85,6 @@ void _start(struct stivale2_struct *stivale2_struct) {
     // LOG_OK("Returned from breakpoint.");
 
     // asm volatile("jmp %0"::"a"(stivale2_struct));
-
-    LOG_ERR("Todo : Virtual Memory Manager.");
 
     LOG_PANIC("Halting...");
     while(1) asm volatile("hlt");

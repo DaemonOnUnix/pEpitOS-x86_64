@@ -83,7 +83,6 @@ uintptr_t get_frame(){
                 z++;
             }
         }
-        
     }
     LOG_PANIC("Not enough memory for allocation.");
     asm volatile ("cli");

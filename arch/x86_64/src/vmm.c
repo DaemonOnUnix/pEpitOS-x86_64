@@ -20,18 +20,20 @@ void init_vmm(){
 // }
 
 uint64_t craft_addr(uint64_t offset_l4, uint64_t offset_l3, uint64_t offset_l2, uint64_t offset_l1, uint64_t offset_l0){
-    return offset_l0 | (offset_l1 << 12) | (offset_l2 << 21) | (offset_l3 << 30) | (offset_l4 << 39);
+    return offset_l0 | (offset_l1 << 12 ) | (offset_l2 << 21) | (offset_l3 << 30 ) | (offset_l4 << 39);
 }
 
 void kmmap(uint64_t addr, size_t size, uint64_t flags){
     // TODO: Kernel panic when unmap non mapped frame.
-    uint64_t offset_l4 = ((addr & mask_l4)) >> 39;
-    uint64_t offset_l3 = ((addr & mask_l3)) >> 30;
-    uint64_t offset_l2 = ((addr & mask_l2)) >> 21;
-    uint64_t offset_l1 = ((addr & mask_l1)) >> 12;
+
+    uint64_t offset_l4 = ((addr & mask_l4)) >> (39 + 0);
+    uint64_t offset_l3 = ((addr & mask_l3)) >> (30 + 0);
+    uint64_t offset_l2 = ((addr & mask_l2)) >> (21 + 0);
+    uint64_t offset_l1 = ((addr & mask_l1)) >> (12 + 0);
     uint64_t offset = ((addr & mask_l0));
     uint64_t* entry;
-
+   // LOG_INFO("XOR_mask {x}", mask_l4 ^ mask_l3 ^ mask_l2 ^ mask_l1 ^ mask_l0);
+    // LOG_INFO("OFFSET PLM3 : {x} {d}", offset_l3, offset_l3);
 
     for (; offset_l4 < ARCH_N_ENTRY; offset_l4++)
     {
@@ -61,7 +63,7 @@ void kmmap(uint64_t addr, size_t size, uint64_t flags){
                     if (*entry == 0){
 
                         *entry = get_frame() | flags | 1;
-                    LOG_INFO("Mapping physical page {x} at address {x} ( {d} | {d} | {d} | {d} | {d} ), remaining size on frame: {x}", *entry,craft_addr(offset_l4, offset_l3, offset_l2, offset_l1, 0),offset_l4,offset_l3,offset_l2,offset_l1,offset, space_left);
+                        LOG_INFO("Mapping physical page {x} at address {x} ( {d} | {d} | {d} | {d} | {d} ), remaining size on frame: {x}", *entry, craft_addr(offset_l4, offset_l3, offset_l2, offset_l1, 0),offset_l4,offset_l3,offset_l2,offset_l1,offset, space_left);
                     }
                     if (space_left >= size)
                         return;
@@ -93,11 +95,11 @@ bool is_frame_empty(uint64_t* frame){
 }
 
 void kmunmap(uint64_t addr, size_t size, mem_direction direction){
-    uint64_t offset_l4 = (int64_t)(((addr & mask_l4)) >> 39);
-    uint64_t offset_l3 = (int64_t)(((addr & mask_l3)) >> 30);
-    uint64_t offset_l2 = (int64_t)(((addr & mask_l2)) >> 21);
-    uint64_t offset_l1 = (int64_t)(((addr & mask_l1)) >> 12);
-    uint64_t offset_l0 = (int64_t)(((addr & mask_l0)));
+    uint64_t offset_l4 = SHIFTR(addr, 9, 39);// (int64_t)(((addr & mask_l4)) >> 39);
+    uint64_t offset_l3 = SHIFTR(addr, 9, 30);// (int64_t)(((addr & mask_l3)) >> 30);
+    uint64_t offset_l2 = SHIFTR(addr, 9, 21);// (int64_t)(((addr & mask_l2)) >> 21);
+    uint64_t offset_l1 = SHIFTR(addr, 9, 12);// (int64_t)(((addr & mask_l1)) >> 12);
+    uint64_t offset_l0 = SHIFTR(addr, 9, 0);// (int64_t)(((addr & mask_l0)));
     uint64_t* entry;
     
     LOG_INFO("Asking to unmap {d} bytes at base (virtual) {x} to {s} addresses", size, addr, (direction == MEM_TO_LOWER ? "lower" : "upper"));
@@ -175,4 +177,32 @@ uintptr_t create_page_directory() {
     new_pd[0] = (uint64_t)new_pdp | 3;
     
     return new_pdp;
+}
+
+#define	fldcw(cw)		asm volatile("fldcw %0" : : "m" (cw))
+#define	fnclex()		asm volatile("fnclex")
+#define	fninit()		asm volatile("fninit")
+#define	fnstcw(addr)		asm volatile("fnstcw %0" : "=m" (*(addr)))
+#define	fnstsw(addr)		asm volatile("fnstsw %0" : "=am" (*(addr)))
+#define	fxrstor(addr)		asm volatile("fxrstor %0" : : "m" (*(addr)))
+#define	fxsave(addr)		asm volatile("fxsave %0" : "=m" (*(addr)))
+#define	ldmxcsr(csr)		asm volatile("ldmxcsr %0" : : "m" (csr))
+
+void setup_context_frame(){
+
+    LOG_INFO("Setting up context frame in current virtual address space...");
+    
+    uintptr_t context_save_addr = 0x7FFFFFFFF000ull;
+
+    LOG_INFO("Without masking : {x} | with masking : {x}", context_save_addr, context_save_addr & CLEAN_BITS_MASK /*context_save_addr & (mask_l4 | mask_l3 | mask_l2 | mask_l1 | mask_l0*/	);
+
+    kmmap(context_save_addr, 512, 2);
+
+    LOG_INFO("Current task currently supporting context frame.")
+
+    // asm volatile("push rax; mov rax, cr4; or rax, (1<<9); mov cr4, rax");
+
+    // asm volatile("fxsave %0;" :: "a"((uint64_t)context_save_addr)); 
+
+    LOG_OK("Context frame successfully setup at address {x}", context_save_addr);
 }

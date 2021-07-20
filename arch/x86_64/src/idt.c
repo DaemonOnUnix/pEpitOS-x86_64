@@ -125,9 +125,14 @@ void setup_idt(void) {
     set_isr_entry(14);
     set_isr_entry(15);
     set_isr_entry(16);
+
     set_isr_entry(17);
     set_isr_entry(18);
     set_isr_entry(19);
+
+    asm volatile("push rax; mov rax, cr4; or rax, (1<<10); mov cr4, rax; pop rax");
+    LOG_OK("Added SIMD exception handler...");
+ 
     set_isr_entry(20);
     set_isr_entry(21);
     set_isr_entry(22);
