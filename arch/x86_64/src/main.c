@@ -61,11 +61,8 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     setup_context_frame();
     
-    extern void test_sse(void);
-    test_sse();
-
-    // asm volatile("movss xmm0, QWORD 1092616192");
-    asm volatile("int 3");
+    extern void enable_sse(void);
+    enable_sse();
 
     // while(1) asm volatile("hlt");
 

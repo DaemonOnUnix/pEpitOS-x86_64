@@ -118,16 +118,11 @@ isr_common_stub:
 
     call isr_handler
 
-    movss   xmm0,  [.LC1]
-
     mov rax, 7FFFFFFFF000h
     fxrstor64 [rax]
     load_context
     add rsp, 16
     iretq
-
-.LC1:
-    dq   1992789456
 
 %macro IRQ 2
 [GLOBAL irq%1]
@@ -180,23 +175,13 @@ irq_common_stub:
    sti
    iretq
 
-global test_sse
-test_sse:
+global enable_sse
+enable_sse:
     push    rbp
     mov     rbp, rsp
     mov rax, cr0
     or rax, 2
     mov cr0, rax
-    movss   xmm0,  [.LC0]
-
-; .pikalul:
-;     hlt
-;     jmp .pikalul
-    int 3
-
-    ;movss   DWORD PTR [rbp-4], xmm0
     mov     eax, 0
     pop     rbp
     ret
-.LC0:
-    dq   1092616192
