@@ -20,6 +20,7 @@ void* memset(void* b, int c, size_t len);
 void* memcpy(void* dest, const void* src, size_t n);
 
 #define PACKED __attribute__((packed))
+#define ONCE(...) {static char once = 0; if(once) return __VA_ARGS__; once = 1;}
 
 // typedef uint64_t size_t;
 #endif

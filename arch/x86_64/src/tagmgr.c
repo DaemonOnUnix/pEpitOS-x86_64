@@ -61,10 +61,18 @@ static struct stivale2_struct_tag_memmap memmap_tag = {
     .memmap = {{0}}
 };
 
+static struct stivale2_struct_tag_rsdp rsdp_tag = {
+    .tag = {
+        .identifier = STIVALE2_STRUCT_TAG_RSDP_ID,
+        .next = (uint64_t)&memmap_tag
+    },
+    .rsdp = 0
+};
+
 __attribute__((section(".stivale2hdr"), used)) 
 static struct stivale2_header stivale_hdr = {
     .entry_point = (uint64_t)(_start),
     .stack = (uintptr_t)stack + sizeof(stack),
     .flags = 0,
-    .tags = (uintptr_t)&memmap_tag
+    .tags = (uintptr_t)&rsdp_tag
 };

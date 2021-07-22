@@ -51,4 +51,6 @@ static inline void asm_out32(uint16_t port, uint32_t data)
                  : "a"(data), "d"(port));
 }
 
+#define HALT() while(1) asm volatile("hlt")
+
 #endif

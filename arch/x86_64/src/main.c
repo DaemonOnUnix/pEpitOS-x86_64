@@ -8,6 +8,9 @@
 #include "interrupts/kernel_exceptions.h"
 #include "pmm/pmm.h"
 #include "vmm/vmm.h"
+#include "intel/cpuinfo.h"
+#include "intel/asm.h"
+#include "UEFI/RSDT.h"
 
 void _start(struct stivale2_struct *stivale2_struct) {
 
@@ -22,25 +25,23 @@ void _start(struct stivale2_struct *stivale2_struct) {
     struct stivale2_struct_tag_memmap * memmap_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
     LOG_INFO("Memory map at {x}, has {d} entries.", memmap_tag, memmap_tag->entries);
 
-    // while(memmap_tag->entries-->0){
-    //     struct stivale2_mmap_entry x = memmap_tag->memmap[memmap_tag->entries];
-    //     LOG_INFO("Base : {x}, Length : {d}, Type : {d}, Unused : {d}", x.base, x.length, x.type, x.unused);
-    // }
+    struct stivale2_struct_tag_rsdp * rsdp_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_RSDP_ID);
+    parse_RSDP(rsdp_tag->rsdp);
 
     setup_gdt();
     setup_idt();
+
     attach_kernel_exceptions();
+
+    cpu_abilities* cpuinfos = get_cpu_info();
+
     set_memory_map(memmap_tag);
 
-#define LITTLE_PAGES 0x1000
-#define BIG_PAGES 0x200000
-
-
-    uint64_t size = get_size_in_bits(LITTLE_PAGES);
+    uint64_t size = get_size_in_bits(ARCH_PAGE_SIZE);
 
     uintptr_t first_frame = get_frame();
     
-    for(size_t i = 0; i < size/LITTLE_PAGES; i++)
+    for(size_t i = 0; i < size/ARCH_PAGE_SIZE; i++)
        get_frame();
     
     init_pmm((uintptr_t)physical_to_stivale(first_frame));
@@ -92,5 +93,5 @@ void _start(struct stivale2_struct *stivale2_struct) {
     // asm volatile("jmp %0"::"a"(stivale2_struct));
 
     LOG_PANIC("Halting...");
-    while(1) asm volatile("hlt");
+    HALT();
 }
