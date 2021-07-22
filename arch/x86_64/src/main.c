@@ -27,7 +27,6 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     struct stivale2_struct_tag_rsdp * rsdp_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_RSDP_ID);
     parse_RSDP(rsdp_tag->rsdp);
-
     setup_gdt();
     setup_idt();
 
@@ -65,6 +64,7 @@ void _start(struct stivale2_struct *stivale2_struct) {
     extern void enable_sse(void);
     enable_sse();
 
+    parse_RSDT();
     // while(1) asm volatile("hlt");
 
     // a[0] = 5;

@@ -30,12 +30,52 @@ void parse_RSDP(uint64_t rsdp_address){
 
 }
 
-void parse_RSDT(){
-
-    
-    if(desc_rsdp_20->firstPart.Revision == 0){
-        
+bool checksum(ACPISDTHeader* header){
+    uint8_t sum = 0;
+    for(size_t i = 0; i < header->Length; i++){
+        sum += ((char*)header)[i];
     }
+    return sum == 0;
+}
 
+void parse_MADT(MADT* madt){
+    // Pointer to the first entry
+    char* ptr = (char*)madt + 0x2C;
+    LOG_INFO("LAPIC address is: {x}", madt->lapic_addr);
+    LOG_INFO("madt length: {d}, end ptr: {x}", madt->h.Length, (char*)madt + madt->h.Length);
+    // HALT();
+    while (ptr < (char*)madt + madt->h.Length)
+    {
+        switch (ptr[0])
+        {
+        case MADT_LAPIC:
+            LOG_INFO("Processor local apic at MADT {x}", ptr);
+            break;
+        case MADT_IOAPIC:
+            LOG_INFO("Processor local I/O apic at MADT {x}", ptr);
+            break;
+        default:
+            LOG_INFO("{x} is not yet implemented", *ptr)
+        break;        
+        }
+        ASSERT(ptr[1] != 0, "", "ptr address is: {x} is wrong");
+        ptr += ptr[1];
+    }
+    
+}
 
+void parse_RSDT(){
+    RSDT *rsdt = (RSDT*)physical_to_stivale(desc_rsdp_20->firstPart.RsdtAddress);
+    size_t entries = (rsdt->h.Length - sizeof(ACPISDTHeader)) / 4;
+    for (size_t i = 0; i < entries; i++)
+    {
+        char name[5] = {0};
+        ACPISDTHeader *h = (ACPISDTHeader *)physical_to_stivale(rsdt->PointersToOtherSDT[i]);
+        memcpy(name, h->Signature,4);
+        ASSERT(checksum(h), "Table {s} is valid", "Table {s} is invalid", name);
+
+        if(!strcmp(name,"APIC")){
+            parse_MADT((MADT*)h);
+        }
+    }
 }

@@ -36,6 +36,26 @@ typedef struct {
     uint32_t PointersToOtherSDT[];
 } PACKED RSDT;
 
-void parse_RSDP(uint64_t rsdp_address);
 
+typedef struct{
+    ACPISDTHeader h;
+    uint32_t lapic_addr;
+    uint32_t flags;
+} PACKED MADT;
+
+typedef enum{
+    MADT_LAPIC = 0,
+    MADT_IOAPIC,
+    MADT_INT_SRC_OVR,
+    MADT_NMSK_INT_SRC,
+    MADT_LAPIC_NNMI,
+    MADT_LAPIC_ADDR_OVR,
+    MADT_IOSAPIC,
+    MADT_LOC_SAPIC,
+    MADT_PLT_INT_SRC,
+    MADT_L2APIC
+} MADT_ENTRY;
+
+void parse_RSDP(uint64_t rsdp_address);
+void parse_RSDT();
 #endif
