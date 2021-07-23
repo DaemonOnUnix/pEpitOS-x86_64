@@ -65,6 +65,7 @@ void _start(struct stivale2_struct *stivale2_struct) {
     enable_sse();
 
     parse_RSDT();
+    enable_APIC();
     // while(1) asm volatile("hlt");
 
     // a[0] = 5;

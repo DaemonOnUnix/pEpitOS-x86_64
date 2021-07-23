@@ -40,11 +40,13 @@ bool checksum(ACPISDTHeader* header){
 uint64_t io_apic_register = 0;
 uint64_t lapic_register = 0;
 
+static apic_info_t apic_info = {0};
+
+
 
 void parse_MADT(MADT* madt){
     // Pointer to the first entry
     char* ptr = (char*)madt + 0x2C;
-    size_t numcore = 0;
     LOG_INFO("LAPIC address is: {x}", madt->lapic_addr);
     LOG_INFO("madt length: {d}, end ptr: {x}", madt->h.Length, (char*)madt + madt->h.Length);
     // HALT();
@@ -53,7 +55,7 @@ void parse_MADT(MADT* madt){
         switch (ptr[0])
         {
         case MADT_LAPIC:{
-            numcore++;
+            apic_info.numcore++;
             if(ptr[4] & 1){
                 LOG_INFO("processor {x} is {s}",ptr[2], (ptr[4] & 0)? "enable" : "disable");
             }
@@ -64,23 +66,18 @@ void parse_MADT(MADT* madt){
             break;
         case MADT_IOAPIC:{
             LOG_INFO("local I/O apic, id: {x} register: {x}, Global system interrupt base: {x}",ptr[1] ,*((uint32_t*)(ptr+4)), *((uint32_t*)(ptr+8)));
-            
-            kmmap_physical(0xffdeadb000, *((uint32_t*)(ptr+4)) ,4096, 2);
-            // io_apic_register = physical_to_stivale(*((uint32_t*)(ptr+4)));
-            io_apic_register = 0xffdeadb000;
-            uint32_t volatile *ioapic = (uint32_t volatile *)io_apic_register;
-            ioapic[0] = (1 & 0xff);
-            ioapic[4];
-            LOG_INFO("Maximum redirection is: {d}", SHIFTR(ioapic[4],8, 16));
+            apic_info.ioapic = (ioapic_entry_t){.id=ptr[1], .address=*((uint32_t*)(ptr+4)), .base=*((uint32_t*)(ptr+8))};
         }
             break;
         case MADT_INT_SRC_OVR:{
             LOG_INFO("foud interrupt source override structure");
             LOG_INFO("Bus source {d}, IRQ source {d}, Global system interrupt {x}", ptr[2], ptr[3], *((uint32_t*)(ptr + 4)));
+            apic_info.interrupt[apic_info.interrupt_count++] = *(interrupt_source_override*)(ptr+2);
         }
         break;
         case MADT_LAPIC_ADDR_OVR:{
             LOG_INFO("Local APIC address is: {x}", *((uint64_t*)(ptr+4)));
+            apic_info.lapic_address = *((uint64_t*)(ptr+4));
         }
         default:
             LOG_INFO("{x} is not yet implemented", *ptr)
@@ -88,7 +85,7 @@ void parse_MADT(MADT* madt){
         }
         ptr += ptr[1];
     }
-    LOG_INFO("{d} core detected", numcore);
+    LOG_INFO("{d} core detected", apic_info.numcore);
 }
 
 void parse_RSDT(){
@@ -105,4 +102,53 @@ void parse_RSDT(){
             parse_MADT((MADT*)h);
         }
     }
+}
+
+void cpuWriteIoAPIC(uint32_t reg, uint32_t value ){
+    uint32_t volatile *ioapic = (uint32_t volatile *)IOAPIC_VIRTUAL_ADDRESS;
+    ioapic[0] = (reg & 0xff);
+    ioapic[4] = value;
+}
+
+uint32_t cpuReadIoAPIC(uint32_t reg){
+  uint32_t volatile *ioapic = (uint32_t volatile *)IOAPIC_VIRTUAL_ADDRESS;
+  ioapic[0] = (reg & 0xff);
+  return ioapic[4];
+}
+
+uint32_t cpuReadLAPIC(uint32_t reg){
+    uint32_t volatile *lapic = (uint32_t volatile *)LAPIC_VIRTUAL_ADDRESS;
+    return lapic[reg];
+}
+void cpuWriteLAPIC(uint32_t reg, uint32_t value){
+    uint32_t volatile *lapic = (uint32_t volatile *)LAPIC_VIRTUAL_ADDRESS;
+    lapic[reg] = value;
+}
+
+
+void redirect_interrupts(){
+    ioapic_entry_t ioapic = apic_info.ioapic;
+    for(size_t i = 0; i < apic_info.interrupt_count; i++){
+        interrupt_source_override interrupt = apic_info.interrupt[i];
+        if(ioapic.base < interrupt.global_system_interrupt && interrupt.irq <= ioapic.max_redirection){
+            LOG_INFO("can redirect interrupt: {x}",interrupt.irq);
+            LOG_ERR("TODO redirect interrupt");
+        } else {
+            LOG_ERR("can't redirect interrupt: {x}",interrupt.irq);
+        }
+    }
+}
+
+void enable_APIC(){
+
+  kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address,IOAPIC_LENGTH, 2);
+  kmmap_physical(LAPIC_VIRTUAL_ADDRESS, apic_info.lapic_address,LAPIC_LENGTH, 2);
+  uint32_t info = cpuReadIoAPIC(1);
+  apic_info.ioapic.max_redirection = SHIFTR(info,8,16);
+
+  LOG_INFO("APIC Version: {x}, Maximum redirection is: {x}", SHIFTR(info, 8, 0), SHIFTR(info, 8, 16));
+  LOG_INFO("Setting the spurious interrupt vector register");
+  cpuWriteLAPIC(SPURIOUS_VECTOR_REGISTER, cpuReadLAPIC(SPURIOUS_VECTOR_REGISTER) | SPURIOUS_ALL | LAPIC_ENABLE_BIT);
+  redirect_interrupts();
+
 }
