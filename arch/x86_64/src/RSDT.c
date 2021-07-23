@@ -37,10 +37,14 @@ bool checksum(ACPISDTHeader* header){
     }
     return sum == 0;
 }
+uint64_t io_apic_register = 0;
+uint64_t lapic_register = 0;
+
 
 void parse_MADT(MADT* madt){
     // Pointer to the first entry
     char* ptr = (char*)madt + 0x2C;
+    size_t numcore = 0;
     LOG_INFO("LAPIC address is: {x}", madt->lapic_addr);
     LOG_INFO("madt length: {d}, end ptr: {x}", madt->h.Length, (char*)madt + madt->h.Length);
     // HALT();
@@ -48,20 +52,43 @@ void parse_MADT(MADT* madt){
     {
         switch (ptr[0])
         {
-        case MADT_LAPIC:
-            LOG_INFO("Processor local apic at MADT {x}", ptr);
+        case MADT_LAPIC:{
+            numcore++;
+            if(ptr[4] & 1){
+                LOG_INFO("processor {x} is {s}",ptr[2], (ptr[4] & 0)? "enable" : "disable");
+            }
+            else{
+                LOG_INFO("processor {x} can't be enable", ptr[2]);
+            }
+        }
             break;
-        case MADT_IOAPIC:
-            LOG_INFO("Processor local I/O apic at MADT {x}", ptr);
+        case MADT_IOAPIC:{
+            LOG_INFO("local I/O apic, id: {x} register: {x}, Global system interrupt base: {x}",ptr[1] ,*((uint32_t*)(ptr+4)), *((uint32_t*)(ptr+8)));
+            
+            kmmap_physical(0xffdeadb000, *((uint32_t*)(ptr+4)) ,4096, 2);
+            // io_apic_register = physical_to_stivale(*((uint32_t*)(ptr+4)));
+            io_apic_register = 0xffdeadb000;
+            uint32_t volatile *ioapic = (uint32_t volatile *)io_apic_register;
+            ioapic[0] = (1 & 0xff);
+            ioapic[4];
+            LOG_INFO("Maximum redirection is: {d}", SHIFTR(ioapic[4],8, 16));
+        }
             break;
+        case MADT_INT_SRC_OVR:{
+            LOG_INFO("foud interrupt source override structure");
+            LOG_INFO("Bus source {d}, IRQ source {d}, Global system interrupt {x}", ptr[2], ptr[3], *((uint32_t*)(ptr + 4)));
+        }
+        break;
+        case MADT_LAPIC_ADDR_OVR:{
+            LOG_INFO("Local APIC address is: {x}", *((uint64_t*)(ptr+4)));
+        }
         default:
             LOG_INFO("{x} is not yet implemented", *ptr)
         break;        
         }
-        ASSERT(ptr[1] != 0, "", "ptr address is: {x} is wrong");
         ptr += ptr[1];
     }
-    
+    LOG_INFO("{d} core detected", numcore);
 }
 
 void parse_RSDT(){

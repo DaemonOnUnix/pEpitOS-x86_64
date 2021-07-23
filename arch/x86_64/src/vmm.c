@@ -99,7 +99,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
     uint64_t offset_l3 = SHIFTR(addr, 9, 30);// (int64_t)(((addr & mask_l3)) >> 30);
     uint64_t offset_l2 = SHIFTR(addr, 9, 21);// (int64_t)(((addr & mask_l2)) >> 21);
     uint64_t offset_l1 = SHIFTR(addr, 9, 12);// (int64_t)(((addr & mask_l1)) >> 12);
-    uint64_t offset_l0 = SHIFTR(addr, 9, 0);// (int64_t)(((addr & mask_l0)));
+    uint64_t offset_l0 = SHIFTR(addr, 12, 0);// (int64_t)(((addr & mask_l0)));
     uint64_t* entry;
     
     LOG_INFO("Asking to unmap {d} bytes at base (virtual) {x} to {s} addresses", size, addr, (direction == MEM_TO_LOWER ? "lower" : "upper"));
@@ -205,4 +205,53 @@ void setup_context_frame(){
     // asm volatile("fxsave %0;" :: "a"((uint64_t)context_save_addr)); 
 
     LOG_OK("Context frame successfully setup at address {x}", context_save_addr);
+}
+
+
+void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t flags){
+    uint64_t offset_l4 = SHIFTR(addr, 9, 39);
+    uint64_t offset_l3 = SHIFTR(addr, 9, 30);
+    uint64_t offset_l2 = SHIFTR(addr, 9, 21);
+    uint64_t offset_l1 = SHIFTR(addr, 9, 12);
+    uint64_t offset_l0 = SHIFTR(addr, 12, 0);
+    uint64_t* entry;
+
+    for (; offset_l4 < ARCH_N_ENTRY; offset_l4++){
+        entry = (void*)(craft_addr(0, 0, 0, 0, offset_l4 * 8));
+        if (*entry == 0)
+            *entry = get_frame() | flags | 1;
+        
+        for (; offset_l3 < ARCH_N_ENTRY; offset_l3++){
+            entry = (void*)(craft_addr(0, 0, 0, offset_l4, offset_l3 * 8));
+            if (*entry == 0)
+                *entry = get_frame() | flags | 1;
+
+            for (; offset_l2 < ARCH_N_ENTRY; offset_l2++){
+                entry = (void*)craft_addr(0, 0, offset_l4, offset_l3, offset_l2 * 8);
+                if (*entry == 0)
+                    *entry = get_frame() | flags | 1;
+                
+                for (; offset_l1 < ARCH_N_ENTRY; offset_l1++){
+                    entry = (void*)craft_addr(0, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
+                    uint64_t space_left = ARCH_PAGE_SIZE - (uint64_t)offset_l0;
+                    if (*entry != 0){
+                        LOG_ERR("Physical page {x} at logical address {x} will be replace", *entry, entry);
+                    }
+                    *entry = physical_addr | flags | 1;
+                    LOG_INFO("Mapping physical page {x} at address {x} ( {d} | {d} | {d} | {d} | {d} ), remaining size on frame: {x}", *entry, craft_addr(offset_l4, offset_l3, offset_l2, offset_l1, 0),offset_l4,offset_l3,offset_l2,offset_l1,offset_l0, space_left);
+                    if (space_left >= size)
+                        return;
+        
+                    physical_addr += space_left;
+                    size -= space_left;
+                    offset_l0 = 0;
+                }
+                offset_l1 = 0;
+            }
+            offset_l2 = 0;
+        }
+        offset_l3 = 0;
+    }
+
+
 }
