@@ -1,0 +1,9 @@
+on: push
+name: clang-format Code Formatter
+jobs:
+  lint:
+    name: clang-format Code Formatter
+    runs-on: ubuntu-latest
+    steps:
+    - name: clang-format Code Formatter
+      uses: ivanludvig/clang-format-action@v1.4
