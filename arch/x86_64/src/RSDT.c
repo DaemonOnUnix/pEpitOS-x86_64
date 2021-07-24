@@ -55,9 +55,10 @@ void parse_MADT(MADT* madt){
         switch (ptr[0])
         {
         case MADT_LAPIC:{
-            apic_info.numcore++;
             if(ptr[4] & 1){
+                apic_info.lapics[apic_info.numcore++] = *(madt_lapic_entry_t*)(ptr+2);
                 LOG_INFO("processor {x} is {s}",ptr[2], (ptr[4] & 0)? "enable" : "disable");
+                
             }
             else{
                 LOG_INFO("processor {x} can't be enable", ptr[2]);
@@ -132,7 +133,9 @@ void redirect_interrupts(){
         interrupt_source_override interrupt = apic_info.interrupt[i];
         if(ioapic.base < interrupt.global_system_interrupt && interrupt.irq <= ioapic.max_redirection){
             LOG_INFO("can redirect interrupt: {x}",interrupt.irq);
-            LOG_ERR("TODO redirect interrupt");
+            uint32_t value = (interrupt.irq + 32) | (0 << 8) | (0 << 11) | (1 << 13) | (0 << 15);
+            cpuWriteIoAPIC(IOAPIC_REDIRECTION_OFFSET + ((interrupt.irq - ioapic.base)*2), value);
+            cpuWriteIoAPIC(IOAPIC_REDIRECTION_OFFSET + ((interrupt.irq - ioapic.base)*2)+1, apic_info.lapics[0].ACPI_id);
         } else {
             LOG_ERR("can't redirect interrupt: {x}",interrupt.irq);
         }
@@ -141,7 +144,7 @@ void redirect_interrupts(){
 
 void enable_APIC(){
 
-  kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address,IOAPIC_LENGTH, 2);
+  kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address,IOAPIC_LENGTH*2, 2);
   kmmap_physical(LAPIC_VIRTUAL_ADDRESS, apic_info.lapic_address,LAPIC_LENGTH, 2);
   uint32_t info = cpuReadIoAPIC(1);
   apic_info.ioapic.max_redirection = SHIFTR(info,8,16);
