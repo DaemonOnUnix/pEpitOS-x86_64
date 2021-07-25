@@ -95,6 +95,7 @@ extern void irq13(void);
 extern void irq14(void);
 extern void irq15(void);
 extern void isr127(void);
+extern void isr129(void);
 
 #define IDT_PRESENT   (0b10000000)
 #define IDT_INTERRUPT (0b00001110)
@@ -147,6 +148,7 @@ void setup_idt(void) {
     set_isr_entry(31);
 
     set_isr_entry(127);
+    set_isr_entry(129);
 
 
     load_idt(&idt_descriptor);

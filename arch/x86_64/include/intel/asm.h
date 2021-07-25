@@ -52,5 +52,7 @@ static inline void asm_out32(uint16_t port, uint32_t data)
 }
 
 #define HALT() while(1) asm volatile("hlt")
+#define ACTIVE_MAPPING(x) asm volatile("mov cr3, %0" :: "a"(x))
+#define TRIGGER_INTERRUPT(x) asm volatile("int " #x)
 
 #endif

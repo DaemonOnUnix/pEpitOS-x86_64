@@ -39,4 +39,16 @@ typedef struct {
 
 } PACKED stackframe;
 
+typedef struct {
+    uint8_t data[512];
+} PACKED fxsaveframe;
+
+typedef struct {
+    fxsaveframe simd_save;
+    stackframe stack_save;
+} PACKED context_save;
+
+#define CONTEXT_FRAME_ADDR ((context_save*)(0x7FFFFFFFF000ull))
+#define FXSAVE_FRAME_ADDR  ((fxsaveframe*)(0x7FFFFFFFF000ull))
+
 #endif
