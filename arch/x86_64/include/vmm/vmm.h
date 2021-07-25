@@ -16,7 +16,7 @@
 size_t virtual_to_physical(size_t addr);
 
 #define stivale_to_physical(x) (void*)(((uint64_t)x) - 0xffffffff80000000ull)
-#define physical_to_stivale(x) (void*)(((uint64_t)x) + 0xffffffff80000000ull)
+#define physical_to_stivale(x) (void*)(((uint64_t)(x)) + 0xffffffff80000000ull)
 
 uint64_t create_page_directory();
 void init_vmm();
@@ -29,4 +29,5 @@ typedef enum {
 } mem_direction;
 void kmunmap(uint64_t addr, size_t size, mem_direction direction);
 void setup_context_frame();
+void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t flags);
 #endif
