@@ -1,6 +1,7 @@
 #include "tasking/tasking.h"
 #include "log/log.h"
 #include "interrupts/defined_interrupts.h"
+#include "intel/asm.h"
 
 void switch_task_stackframe(stackframe* regs, stackframe* to_inject){
     LOG_INFO("Injecting registers...");
@@ -16,7 +17,7 @@ void switch_task_mapped(task* to_enable){
     context_save* save_frame = get_context();
     // should save current context
     ACTIVE_MAPPING(to_enable->page_directory);
-    //  TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
+    TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
 }
 
 void switch_task_from_interrupt(stackframe* regs){
@@ -26,10 +27,12 @@ void switch_task_from_interrupt(stackframe* regs){
 }
 
 void enable_preemption(){
-    LOG_ERR("TODO");
+    LOG_INFO("Enabling preemption");
+    asm volatile("sti");
 }
 
 void disable_preemption(){
-    LOG_ERR("TODO");
+    LOG_INFO("Disabling preemption");
+    asm volatile("cli");
 }
 

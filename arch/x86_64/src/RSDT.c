@@ -50,6 +50,7 @@ void parse_MADT(MADT* madt){
     // Pointer to the first entry
     char* ptr = (char*)madt + 0x2C;
     LOG_INFO("LAPIC address is: {x}", madt->lapic_addr);
+    apic_info.lapic_address = (madt->lapic_addr);
     LOG_INFO("madt length: {d}, end ptr: {x}", madt->h.Length, (char*)madt + madt->h.Length);
     // HALT();
     while (ptr < (char*)madt + madt->h.Length)
@@ -73,7 +74,7 @@ void parse_MADT(MADT* madt){
         }
             break;
         case MADT_INT_SRC_OVR:{
-            LOG_INFO("foud interrupt source override structure");
+            LOG_INFO("found interrupt source override structure");
             LOG_INFO("Bus source {d}, IRQ source {d}, Global system interrupt {x}", ptr[2], ptr[3], *((uint32_t*)(ptr + 4)));
             apic_info.interrupt[apic_info.interrupt_count++] = *(interrupt_source_override*)(ptr+2);
         }

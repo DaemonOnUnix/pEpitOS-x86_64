@@ -1,4 +1,6 @@
 #include "UEFI/RSDT.h"
+#include "UEFI/APIC.h"
+#include "UEFI/hpet.h"
 #include "freestanding.h"
 #include "log/log.h"
 #include "utils/bitsmanip.h"
@@ -22,6 +24,7 @@ uint32_t cpuReadLAPIC(uint32_t reg){
     uint32_t volatile *lapic = (uint32_t volatile *)LAPIC_VIRTUAL_ADDRESS;
     return lapic[reg];
 }
+
 void cpuWriteLAPIC(uint32_t reg, uint32_t value){
     uint32_t volatile *lapic = (uint32_t volatile *)LAPIC_VIRTUAL_ADDRESS;
     lapic[reg] = value;
@@ -45,14 +48,32 @@ void redirect_interrupts(){
 
 void enable_APIC(){
 
-    kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address,IOAPIC_LENGTH*2, 2);
-    kmmap_physical(LAPIC_VIRTUAL_ADDRESS, apic_info.lapic_address,LAPIC_LENGTH, 2);
+    kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address, IOAPIC_LENGTH*2, 2);
+    LOG_INFO("Potentially cursed : {x}", apic_info.lapic_address);
+    kmmap_physical(LAPIC_VIRTUAL_ADDRESS, apic_info.lapic_address, LAPIC_LENGTH*2, 2);
     uint32_t info = cpuReadIoAPIC(1);
     apic_info.ioapic.max_redirection = SHIFTR(info,8,16);
 
-    LOG_INFO("APIC Version: {x}, Maximum redirection is: {x}", SHIFTR(info, 8, 0), SHIFTR(info, 8, 16));
+    LOG_INFO("I/O APIC Version: {x}, Maximum redirection is: {x}", SHIFTR(info, 8, 0), SHIFTR(info, 8, 16));
+    LOG_INFO("APIC version: {x}",cpuReadLAPIC(0x30));
     LOG_INFO("Setting the spurious interrupt vector register");
     cpuWriteLAPIC(SPURIOUS_VECTOR_REGISTER, cpuReadLAPIC(SPURIOUS_VECTOR_REGISTER) | SPURIOUS_ALL | LAPIC_ENABLE_BIT);
     redirect_interrupts();
 
+}
+
+void init_APIC_timer(){
+    ONCE();
+    
+    size_t tick_to_wait = hpet_ms_to_tick(10);
+    hpet_reset();
+    LOG_INFO("Ticks to wait : {d} | {x}", tick_to_wait, tick_to_wait);
+    cpuWriteLAPIC(APIC_REGISTER_TIMER_DIV, 0x3);
+    cpuWriteLAPIC(APIC_REGISTER_TIMER_INITCNT, (uint32_t)-1);
+    // hpet_wait_tick(tick_to_wait);
+    hpet_wait(10000);
+    cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_MASKED);
+    uint32_t ticksIn10ms = 0xFFFFFFFF - cpuReadLAPIC(APIC_REGISTER_TIMER_CURRCNT);
+    LOG_INFO("There is {d} ticks in 1 ms", ticksIn10ms);
+    
 }
