@@ -104,6 +104,8 @@ void parse_RSDT(){
         }
         else if(!strcmp(name,"HPET")){
             hpet_init((HPET*)h);
+            hpet_wait(2000);
+            hpet_wait(30000);
         }
     }
 }

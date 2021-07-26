@@ -9,7 +9,8 @@ static size_t period = 0;
 
 void hpet_init(HPET* hpet){
     ONCE();
-        if(hpet->address_base.address_space_id){
+    
+    if(hpet->address_base.address_space_id){
         LOG_INFO("hpet is system I/o");
     }
     else{
@@ -20,7 +21,7 @@ void hpet_init(HPET* hpet){
     kmmap_physical(hpet_register_address, hpet->address_base.address, 4096,2);
     
     uint64_t value = read_mem64(hpet_register_address);
-    LOG_INFO("Main counter is {d} bit, vendor id: {x}",32 + (32* ((value >> 13)&1)), SHIFTR(value, 16, 16));
+    // LOG_INFO("Main counter is {d} bit, vendor id: {x}",32 + (32* ((value >> 13)&1)), SHIFTR(value, 16, 16));
     uint32_t timer_period = (SHIFTR(value, 32, 32));
     LOG_INFO("Counter period is: {d} femtoseconds", timer_period);
     period = timer_period;
@@ -29,11 +30,9 @@ void hpet_init(HPET* hpet){
     
 
 void hpet_reset(){
+    LOG_INFO("Resetting hpet timer");
     char* ptr = (char*)hpet_register_address;
     uint64_t value = read_mem64(ptr+0xf0);
-    LOG_INFO("Current timer value: {x}", value);
-    LOG_INFO("enabling timer current register value: {x}",*(uint64_t*)(ptr+0x10));
-
     write_mem64(ptr+0x10, read_mem64(ptr+0x10) & (~1ull));
     write_mem64(ptr+0xf0,0);
 }

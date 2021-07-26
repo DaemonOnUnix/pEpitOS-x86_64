@@ -13,7 +13,7 @@ typedef struct{
     uint8_t reserved;
     uint64_t address; 
 }PACKED HPET_address;
-
+ 
 typedef struct{
     ACPISDTHeader h;
     uint8_t revision_id;
