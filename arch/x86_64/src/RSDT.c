@@ -1,7 +1,7 @@
 #include "UEFI/RSDT.h"
 #include "log/log.h"
 #include "vmm/vmm.h"
-
+#include "UEFI/hpet.h"
 //static RSDPDescriptor20 RSDP_desc = {0};
 static RSDPDescriptor20* desc_rsdp_20 = 0;
 
@@ -101,6 +101,11 @@ void parse_RSDT(){
 
         if(!strcmp(name,"APIC")){
             parse_MADT((MADT*)h);
+        }
+        else if(!strcmp(name,"HPET")){
+            hpet_init((HPET*)h);
+            hpet_wait(2000);
+            hpet_wait(30000);
         }
     }
 }

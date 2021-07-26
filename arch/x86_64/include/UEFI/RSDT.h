@@ -2,6 +2,7 @@
 #define UEFI_RSDT
 
 #include "freestanding.h"
+#include "UEFI.h"
 
 typedef struct {
     char Signature[8];
@@ -20,22 +21,9 @@ typedef struct {
 } PACKED RSDPDescriptor20;
 
 typedef struct {
-    char Signature[4];
-    uint32_t Length;
-    uint8_t Revision;
-    uint8_t Checksum;
-    char OEMID[6];
-    char OEMTableID[8];
-    uint32_t OEMRevision;
-    uint32_t CreatorID;
-    uint32_t CreatorRevision;
-} PACKED ACPISDTHeader;
-
-typedef struct {
     ACPISDTHeader h;
     uint32_t PointersToOtherSDT[];
 } PACKED RSDT;
-
 
 typedef struct{
     ACPISDTHeader h;

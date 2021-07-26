@@ -16,7 +16,7 @@ void switch_task_mapped(task* to_enable){
     context_save* save_frame = get_context();
     // should save current context
     ACTIVE_MAPPING(to_enable->page_directory);
-    TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
+    //  TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
 }
 
 void switch_task_from_interrupt(stackframe* regs){

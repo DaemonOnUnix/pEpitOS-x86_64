@@ -18,9 +18,13 @@
 
 void* memset(void* b, int c, size_t len);
 void* memcpy(void* dest, const void* src, size_t n);
+
 bool strcmp(char* str1, char*str2);
+
 #define PACKED __attribute__((packed))
 #define ONCE(...) {static char once = 0; if(once) return __VA_ARGS__; once = 1;}
+#define write_mem64(addr, value) ((*((uint64_t*)(addr))) = (value))
+#define read_mem64(addr) (*(uint64_t*)(addr))
 
 // typedef uint64_t size_t;
 #endif
