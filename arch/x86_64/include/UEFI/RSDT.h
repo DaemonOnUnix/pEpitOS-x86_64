@@ -1,8 +1,8 @@
-#ifndef UEFI_RSDT
-#define UEFI_RSDT
+#ifndef UEFI_RSDT_H
+#define UEFI_RSDT_H
 
 #include "freestanding.h"
-#include "UEFI.h"
+#include "ACPI.h"
 
 typedef struct {
     char Signature[8];

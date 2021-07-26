@@ -1,17 +1,8 @@
-#ifndef kUEFI
-#define kUEFI
+#ifndef UEFI_H
+#define UEFI_H
 
-
-typedef struct {
-    char Signature[4];
-    uint32_t Length;
-    uint8_t Revision;
-    uint8_t Checksum;
-    char OEMID[6];
-    char OEMTableID[8];
-    uint32_t OEMRevision;
-    uint32_t CreatorID;
-    uint32_t CreatorRevision;
-} PACKED ACPISDTHeader;
+#include "ACPI.h"
+#include "RSDT.h"
+#include "hpet.h"
 
 #endif

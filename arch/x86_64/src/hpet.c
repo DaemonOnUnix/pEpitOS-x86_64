@@ -50,6 +50,14 @@ void hpet_wait(size_t ms){
     hpet_reset();
     hpet_start();
     while (read_mem64(ptr+0xf0) < tick_to_wait);
+}
 
+size_t hpet_ms_to_tick(size_t ms){
+    return (ms * 1000000000000) / period;
+}
+
+void hpet_wait_tick(size_t tick){
+    char* ptr = (char*)hpet_register_address;
+    while (read_mem64(ptr+0xf0) < tick);
 }
 

@@ -1,10 +1,8 @@
-#ifndef kHPET
-#define kHPET
+#ifndef UEFI_HPET_H
+#define UEFI_HPET_H
 
 #include "freestanding.h"
-#include "UEFI.h"
-
-
+#include "ACPI.h"
 
 typedef struct{
     uint8_t address_space_id;
@@ -32,5 +30,6 @@ typedef struct{
 void hpet_init(HPET* hpet);
 void hpet_reset();
 void hpet_wait(size_t ms);
-
+size_t hpet_ms_to_tick(size_t ms);
+void hpet_wait_tick(size_t tick);
 #endif
