@@ -1,7 +1,7 @@
 #include "UEFI/RSDT.h"
 #include "log/log.h"
 #include "vmm/vmm.h"
-
+#include "UEFI/hpet.h"
 //static RSDPDescriptor20 RSDP_desc = {0};
 static RSDPDescriptor20* desc_rsdp_20 = 0;
 
@@ -88,42 +88,6 @@ void parse_MADT(MADT* madt){
     }
     LOG_INFO("{d} core detected", apic_info.numcore);
 }
-void parse_HPET(HPET* hpet){
-    char* ptr = (char*)hpet;
-    LOG_INFO("hpet length: adress space: {d}",ptr[13]);
-    if(hpet->address_base.address_space_id){
-        LOG_INFO("hpet is system I/o");
-    }
-    else{
-        LOG_INFO("hpet is memory mapped at address {x} with register offset {x}",hpet->address_base.address ,hpet->address_base.register_bit_width);
-    }
-
-    uint64_t hpet_registers = hpet->address_base.address | (1ull << 40ull);
-    ptr = (char*)hpet_registers;
-    kmmap_physical(hpet_registers, hpet->address_base.address, 4096,2);
-
-    uint64_t value = *(uint64_t*)(hpet_registers);
-    LOG_INFO("Main counter is {d} bit, vendor id: {x}",32 + (32* ((value >> 13)&1)), SHIFTR(value, 16, 16));
-    uint32_t timer_period = (SHIFTR(value, 32, 32));
-    LOG_INFO("Counter period is: {d} femtoseconds", timer_period);
-
-     value = *(uint64_t*)(ptr+0xF0);
-    LOG_INFO("Current timer value: {x}", value);
-    LOG_INFO("enabling timer current register value: {x}",*(uint64_t*)(ptr+0x10));
-    *(uint64_t*)(ptr+0x10) = ((*(uint64_t*)(ptr+0x10)) & (~1ull));
-     *(uint64_t*)(ptr+0xF0) = 0;
-    *(uint64_t*)(ptr+0x10) = ((*(uint64_t*)(ptr+0x10)) | 1);
-
-     value = *(uint64_t*)(ptr+0xF0);
-    while(value < 2000){
-    value = *(uint64_t*)(ptr+0xF0);
-    LOG_INFO("Current timer value: {d}", value);
-    }
-     value = *(uint64_t*)(ptr+0xF0);
-    LOG_INFO("Current timer value: {x}", value);
-
-
-}
 
 void parse_RSDT(){
     RSDT *rsdt = (RSDT*)physical_to_stivale(desc_rsdp_20->firstPart.RsdtAddress);
@@ -139,7 +103,7 @@ void parse_RSDT(){
             parse_MADT((MADT*)h);
         }
         else if(!strcmp(name,"HPET")){
-            parse_HPET((HPET*)h);
+            hpet_init((HPET*)h);
         }
     }
 }
