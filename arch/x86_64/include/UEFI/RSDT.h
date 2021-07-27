@@ -3,7 +3,7 @@
 
 #include "freestanding.h"
 #include "ACPI.h"
-
+#define MADT_ENTRY_START 0x2c
 typedef struct {
     char Signature[8];
     uint8_t Checksum;

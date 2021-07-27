@@ -21,7 +21,6 @@ void parse_RSDP(uint64_t rsdp_address){
     char rsdp_string[9];
     memcpy(rsdp_string , (void*)rsdp_address, 8);
     LOG_INFO("RSDP is located at {x}, rsdp string is \"{s}\"", rsdp_address, rsdp_string);
-
     
     ASSERT(!strcmp(rsdp_string,"RSD PTR "), "Got RSDP successfully at address {x}", "Error while getting RSDP at address {x}", rsdp_address);
     
@@ -44,10 +43,9 @@ bool checksum(ACPISDTHeader* header){
 
 void parse_MADT(MADT* madt){
     LOG_INFO("Parsing the MADT table");
-    char* ptr = (char*)madt + 0x2C;
+    char* ptr = (char*)madt + MADT_ENTRY_START;
     LOG_INFO("LAPIC address is: {x}", madt->lapic_addr);
     apic_info.lapic_address = madt->lapic_addr;
-    
     
     while (ptr < (char*)madt + madt->h.Length)
     {
@@ -58,11 +56,11 @@ void parse_MADT(MADT* madt){
             if (ptr[4] & 1)
             {
                 apic_info.lapics[apic_info.numcore++] = *(madt_lapic_entry_t *)(ptr + 2);
-                LOG_INFO("processor {x} is {s}", ptr[2], (ptr[4] & 0) ? "enable" : "disable");
+                LOG_INFO("Processor {x} is {s}", ptr[2], (ptr[4] & 0) ? "enable" : "disable");
             }
             else
             {
-                LOG_INFO("processor {x} can't be enable", ptr[2]);
+                LOG_INFO("Processor {x} can't be enable", ptr[2]);
             }
         }
         break;
@@ -74,8 +72,7 @@ void parse_MADT(MADT* madt){
         break;
         case MADT_INT_SRC_OVR:
         {
-            LOG_INFO("found interrupt source override structure");
-            LOG_INFO("Bus source {d}, IRQ source {d}, Global system interrupt {x}", ptr[2], ptr[3], *((uint32_t *)(ptr + 4)));
+            LOG_INFO("Interrupt Source Override, Bus: {d} | IRQ: {d} | Global system interrupt {x}", ptr[2], ptr[3], *((uint32_t *)(ptr + 4)));
             apic_info.interrupt[apic_info.interrupt_count++] = *(interrupt_source_override *)(ptr + 2);
         }
         break;
@@ -86,12 +83,12 @@ void parse_MADT(MADT* madt){
         }
         break;
         default:
-            LOG_INFO("{x} is not yet implemented", *ptr)
+            LOG_INFO("MADT entry {x} is not yet implemented", *ptr)
             break;
         }
         ptr += ptr[1];
     }
-    LOG_INFO("{d} core detected", apic_info.numcore);
+    LOG_INFO("{d} core(s) detected", apic_info.numcore);
 }
 
 void parse_RSDT(){
