@@ -22,10 +22,8 @@ void parse_RSDP(uint64_t rsdp_address){
     memcpy(rsdp_string , (void*)rsdp_address, 8);
     LOG_INFO("RSDP is located at {x}, rsdp string is \"{s}\"", rsdp_address, rsdp_string);
 
-    char* compare_string = "RSD PTR ";
-    uint8_t i = 0;
-    for(; compare_string[i] == rsdp_string[i] && i < 8; i++);
-    ASSERT(i == 8, "Got RSDP successfully at address {x}", "Error while getting RSDP at address {x}", rsdp_address);
+    
+    ASSERT(!strcmp(rsdp_string,"RSD PTR "), "Got RSDP successfully at address {x}", "Error while getting RSDP at address {x}", rsdp_address);
     
     LOG_INFO("RSDP Version {d}.0 detected", desc_rsdp_20->firstPart.Revision+1);
 
@@ -44,48 +42,52 @@ bool checksum(ACPISDTHeader* header){
 }
 
 
-
-
 void parse_MADT(MADT* madt){
-    // Pointer to the first entry
+    LOG_INFO("Parsing the MADT table");
     char* ptr = (char*)madt + 0x2C;
     LOG_INFO("LAPIC address is: {x}", madt->lapic_addr);
-    apic_info.lapic_address = (madt->lapic_addr);
-    LOG_INFO("madt length: {d}, end ptr: {x}", madt->h.Length, (char*)madt + madt->h.Length);
-    // HALT();
+    apic_info.lapic_address = madt->lapic_addr;
+    
+    
     while (ptr < (char*)madt + madt->h.Length)
     {
         switch (ptr[0])
         {
-        case MADT_LAPIC:{
-            if(ptr[4] & 1){
-                apic_info.lapics[apic_info.numcore++] = *(madt_lapic_entry_t*)(ptr+2);
-                LOG_INFO("processor {x} is {s}",ptr[2], (ptr[4] & 0)? "enable" : "disable");
-                
+        case MADT_LAPIC:
+        {
+            if (ptr[4] & 1)
+            {
+                apic_info.lapics[apic_info.numcore++] = *(madt_lapic_entry_t *)(ptr + 2);
+                LOG_INFO("processor {x} is {s}", ptr[2], (ptr[4] & 0) ? "enable" : "disable");
             }
-            else{
+            else
+            {
                 LOG_INFO("processor {x} can't be enable", ptr[2]);
             }
         }
-            break;
-        case MADT_IOAPIC:{
-            LOG_INFO("local I/O apic, id: {x} register: {x}, Global system interrupt base: {x}",ptr[1] ,*((uint32_t*)(ptr+4)), *((uint32_t*)(ptr+8)));
-            apic_info.ioapic = (ioapic_entry_t){.id=ptr[1], .address=*((uint32_t*)(ptr+4)), .base=*((uint32_t*)(ptr+8))};
-        }
-            break;
-        case MADT_INT_SRC_OVR:{
-            LOG_INFO("found interrupt source override structure");
-            LOG_INFO("Bus source {d}, IRQ source {d}, Global system interrupt {x}", ptr[2], ptr[3], *((uint32_t*)(ptr + 4)));
-            apic_info.interrupt[apic_info.interrupt_count++] = *(interrupt_source_override*)(ptr+2);
+        break;
+        case MADT_IOAPIC:
+        {
+            LOG_INFO("local I/O apic, id: {x} register: {x}, Global system interrupt base: {x}", ptr[1], *((uint32_t *)(ptr + 4)), *((uint32_t *)(ptr + 8)));
+            apic_info.ioapic = (ioapic_entry_t){.id = ptr[1], .address = *((uint32_t *)(ptr + 4)), .base = *((uint32_t *)(ptr + 8))};
         }
         break;
-        case MADT_LAPIC_ADDR_OVR:{
-            LOG_INFO("Local APIC address is: {x}", *((uint64_t*)(ptr+4)));
-            apic_info.lapic_address = *((uint64_t*)(ptr+4));
+        case MADT_INT_SRC_OVR:
+        {
+            LOG_INFO("found interrupt source override structure");
+            LOG_INFO("Bus source {d}, IRQ source {d}, Global system interrupt {x}", ptr[2], ptr[3], *((uint32_t *)(ptr + 4)));
+            apic_info.interrupt[apic_info.interrupt_count++] = *(interrupt_source_override *)(ptr + 2);
         }
+        break;
+        case MADT_LAPIC_ADDR_OVR:
+        {
+            LOG_INFO("Local APIC address is: {x}", *((uint64_t *)(ptr + 4)));
+            apic_info.lapic_address = *((uint64_t *)(ptr + 4));
+        }
+        break;
         default:
             LOG_INFO("{x} is not yet implemented", *ptr)
-        break;        
+            break;
         }
         ptr += ptr[1];
     }
@@ -107,7 +109,6 @@ void parse_RSDT(){
         }
         else if(!strcmp(name,"HPET")){
             hpet_init((HPET*)h);
-            hpet_wait(2000);
         }
     }
 }

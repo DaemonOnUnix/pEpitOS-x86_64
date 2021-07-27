@@ -2,6 +2,7 @@
 #include "UEFI/RSDT.h"
 #include "log/log.h"
 #include "utils/bitsmanip.h"
+#include "vmm/vmm.h"
 
 
 static uintptr_t hpet_register_address = 0;
@@ -11,20 +12,21 @@ void hpet_init(HPET* hpet){
     ONCE();
     
     if(hpet->address_base.address_space_id){
-        LOG_INFO("hpet is system I/o");
+        LOG_PANIC("HPET is system I/o");
+        HALT();
     }
     else{
-        LOG_INFO("hpet is memory mapped at address {x} with register offset {x}",hpet->address_base.address ,hpet->address_base.register_bit_width);
+        LOG_INFO("HPET is memory mapped at address {x} with register offset {x}",hpet->address_base.address ,hpet->address_base.register_bit_width);
     }
     
-    hpet_register_address = hpet->address_base.address | (1ull << 40ull);
-    kmmap_physical(hpet_register_address, hpet->address_base.address, 4096,2);
+    hpet_register_address = map_physical(hpet->address_base.address, 4096);
+    LOG_INFO("HPET found at address: {x} and mapped at address {x}", hpet->address_base.address, hpet_register_address);
     
     uint64_t value = read_mem64(hpet_register_address);
-    // LOG_INFO("Main counter is {d} bit, vendor id: {x}",32 + (32* ((value >> 13)&1)), SHIFTR(value, 16, 16));
-    uint32_t timer_period = (SHIFTR(value, 32, 32));
-    LOG_INFO("Counter period is: {d} femtoseconds", timer_period);
-    period = timer_period;
+    LOG_INFO("HPET main counter is {d} bits, vendor id: {x}",32 + (32* ((value >> 13)&1)), SHIFTR(value, 16, 16));
+    period = (SHIFTR(value, 32, 32));
+    LOG_INFO("HPET counter period is: {d} femtoseconds", period);
+    
 }
 
     
@@ -32,24 +34,23 @@ void hpet_init(HPET* hpet){
 void hpet_reset(){
     LOG_INFO("Resetting hpet timer");
     char* ptr = (char*)hpet_register_address;
-    uint64_t value = read_mem64(ptr+0xf0);
-    write_mem64(ptr+0x10, read_mem64(ptr+0x10) & (~1ull));
-    write_mem64(ptr+0xf0,0);
+    write_mem64(ptr+HPET_General_Configuration, read_mem64(ptr+HPET_General_Configuration) & (~1ull));
+    write_mem64(ptr+HPET_Main_Counter_Value,0);
 }
 
 void hpet_start(){
     char* ptr = (char*)hpet_register_address;
-    write_mem64(ptr+0x10, read_mem64(ptr+0x10) | 1);
+    write_mem64(ptr+HPET_General_Configuration, read_mem64(ptr+HPET_General_Configuration) | 1);
 }
 
 
 void hpet_wait(size_t ms){
     char* ptr = (char*)hpet_register_address;
     size_t tick_to_wait = (ms * 1000000000000) / period;
-    LOG_INFO("wait for {d} tick", tick_to_wait);
+    LOG_INFO("HPET waiting {d} ticks", tick_to_wait);
     hpet_reset();
     hpet_start();
-    while (read_mem64(ptr+0xf0) < tick_to_wait);
+    while (read_mem64(ptr+HPET_Main_Counter_Value) < tick_to_wait);
 }
 
 size_t hpet_ms_to_tick(size_t ms){
@@ -59,6 +60,6 @@ size_t hpet_ms_to_tick(size_t ms){
 void hpet_wait_tick(size_t tick){
     char* ptr = (char*)hpet_register_address;
     hpet_start();
-    while (read_mem64(ptr+0xf0) < tick);
+    while (read_mem64(ptr+HPET_Main_Counter_Value) < tick);
 }
 

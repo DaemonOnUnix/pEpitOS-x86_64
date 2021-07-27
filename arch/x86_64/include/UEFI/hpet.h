@@ -27,6 +27,9 @@ typedef struct{
 } PACKED HPET;
 
 
+#define HPET_General_Configuration 0x10
+#define HPET_Main_Counter_Value 0xf0
+
 void hpet_init(HPET* hpet);
 void hpet_reset();
 void hpet_wait(size_t ms);

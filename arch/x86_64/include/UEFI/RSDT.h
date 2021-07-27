@@ -94,10 +94,7 @@ typedef struct {
 
 
 
-#define LAPIC_VIRTUAL_ADDRESS 0xffdaedc000
 #define LAPIC_LENGTH 0x1000
-
-#define IOAPIC_VIRTUAL_ADDRESS 0xffdeadc000
 #define IOAPIC_LENGTH 0x1000
 #define IOAPIC_REDIRECTION_OFFSET 0x10
 

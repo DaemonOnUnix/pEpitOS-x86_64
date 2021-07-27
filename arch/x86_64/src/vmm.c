@@ -116,7 +116,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
                     if (offset_l0 == 0)
                     {
                         entry = (void *)craft_addr(0, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
-                        free_frame(*entry);
+                        free_frame((uintptr_t)(*entry));
                         
 
                         *entry = 0;
@@ -173,7 +173,7 @@ uintptr_t create_page_directory() {
     
     new_pd[0] = (uint64_t)new_pdp | 3;
     
-    return new_pdp;
+    return (uintptr_t)new_pdp;
 }
 
 void setup_context_frame(){
@@ -194,30 +194,36 @@ void setup_context_frame(){
 }
 
 
-
+/**
+ * Compute the amount of free "virtual byte" available at the specified address
+ * The count stop when the size reached the value of "stop_value"
+**/
 size_t get_size(uintptr_t base_addr, size_t stop_value){
     uint64_t* entry = 0;
-    address_64_bits address = {0};
-    address.address = base_addr;
+    address_64_bits address = {.address=base_addr};
+    
     size_t size = 0;
     for (; address.offset.plm4 < ARCH_N_ENTRY; address.offset.plm4++){
         entry = (void*)(craft_addr(0, 0, 0, 0, address.offset.plm4 * 8));
         if (*entry == 0){
-            size += (1<<39);
+            if((size += (1ull<<39)) >= stop_value)
+                return size;
             continue;
         }
    
         for (; address.offset.plm3 < ARCH_N_ENTRY; address.offset.plm3++){
             entry = (void*)(craft_addr(0, 0, 0, address.offset.plm4, address.offset.plm3 * 8));
             if (*entry == 0){
-                size += (1 << 30);
+                if((size += (1ull << 30)) >= stop_value)
+                    return size;
                 continue;
             }
 
             for (; address.offset.plm2 < ARCH_N_ENTRY; address.offset.plm2++){
                 entry = (void*)craft_addr(0, 0, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
                 if (*entry == 0){
-                    size += (1 << 21);
+                    if((size += (1ull << 21)) >= stop_value)
+                        return size;
                     continue;
                 }
                 
@@ -225,7 +231,7 @@ size_t get_size(uintptr_t base_addr, size_t stop_value){
                     entry = (void*)craft_addr(0, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
                     
                     if (*entry == 0){
-                        size += (1 << 12);
+                        size += (1ull << 12);
                         if(size >= stop_value)
                             return size;
                     }
@@ -240,11 +246,15 @@ size_t get_size(uintptr_t base_addr, size_t stop_value){
     }
     return size;
 }
+/**
+ * Search the first non-mapped address beginning at base_addr
+ * Return first non mapped address found.
+ * Return 0 when none address are found.
+ **/
 uint64_t search_empty_space(uintptr_t base_addr){
     uint64_t* entry = 0;
-    address_64_bits address = {0};
-    address.address = base_addr;
-        
+    address_64_bits address = {.address=base_addr};
+    
     for (; address.offset.plm4 < ARCH_N_ENTRY; address.offset.plm4++){
         entry = (void*)(craft_addr(0, 0, 0, 0, address.offset.plm4 * 8));
         if (*entry == 0)
@@ -271,7 +281,7 @@ uint64_t search_empty_space(uintptr_t base_addr){
         }
         address.offset.plm3 = 0;
     }
-    LOG_ERR("pas d'espace disponible à partir de l'addresse {x}", base_addr);
+    LOG_ERR("There is no free space after the address {x}", base_addr);
     return 0;
 }
 
@@ -282,10 +292,9 @@ void* map_physical(uint64_t physical_addr, size_t size){
         address = search_empty_space(address + space);
     }
     if(address == 0){
-        LOG_PANIC("no more space available");
+        LOG_PANIC("Unable to find {d} free contiuous byte", size);
     }
     kmmap_physical(address, physical_addr, size, 2);
-    LOG_INFO("Available address: {x}", address);
 
     return (void*)address;
 }
