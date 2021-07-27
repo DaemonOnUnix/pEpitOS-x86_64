@@ -21,13 +21,13 @@ uint32_t cpuReadIoAPIC(uint32_t reg){
 }
 
 uint32_t cpuReadLAPIC(uint32_t reg){
-    uint32_t volatile *lapic = (uint32_t volatile *)LAPIC_VIRTUAL_ADDRESS;
-    return lapic[reg];
+    char volatile *lapic = (char volatile *)LAPIC_VIRTUAL_ADDRESS;
+    return *(uint32_t *)(lapic + reg);
 }
 
 void cpuWriteLAPIC(uint32_t reg, uint32_t value){
-    uint32_t volatile *lapic = (uint32_t volatile *)LAPIC_VIRTUAL_ADDRESS;
-    lapic[reg] = value;
+    char volatile *lapic = (char volatile *)LAPIC_VIRTUAL_ADDRESS;
+    *(uint32_t*)(lapic + reg)  = value;
 }
 
 
@@ -70,10 +70,11 @@ void init_APIC_timer(){
     LOG_INFO("Ticks to wait : {d} | {x}", tick_to_wait, tick_to_wait);
     cpuWriteLAPIC(APIC_REGISTER_TIMER_DIV, 0x3);
     cpuWriteLAPIC(APIC_REGISTER_TIMER_INITCNT, (uint32_t)-1);
+    LOG_INFO("lapic current:{x} lapic init:{x}", cpuReadLAPIC(APIC_REGISTER_TIMER_CURRCNT), cpuReadLAPIC(APIC_REGISTER_TIMER_CURRCNT));
     // hpet_wait_tick(tick_to_wait);
-    hpet_wait(10000);
+    hpet_wait(10);
     cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_MASKED);
     uint32_t ticksIn10ms = 0xFFFFFFFF - cpuReadLAPIC(APIC_REGISTER_TIMER_CURRCNT);
-    LOG_INFO("There is {d} ticks in 1 ms", ticksIn10ms);
+    LOG_INFO("There is {x} | {d} ticks in 10 ms", ticksIn10ms,ticksIn10ms);
     
 }
