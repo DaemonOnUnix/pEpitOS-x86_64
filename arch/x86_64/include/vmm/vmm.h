@@ -27,7 +27,24 @@ typedef enum {
     MEM_TO_UPPER,
     MEM_TO_LOWER
 } mem_direction;
+
+typedef struct {
+
+    uint16_t plm0 : 12;
+    uint16_t plm1 : 9;
+    uint16_t plm2 : 9;
+    uint16_t plm3 : 9;
+    uint16_t plm4 : 9;
+    uint16_t unused;
+}PACKED address_offset_64;
+
+typedef union {
+    uint64_t address;
+    address_offset_64 offset;
+} address_64_bits;
+
 void kmunmap(uint64_t addr, size_t size, mem_direction direction);
 void setup_context_frame();
 void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t flags);
+void* map_physical(uint64_t physical_addr, size_t size);
 #endif

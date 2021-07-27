@@ -194,6 +194,102 @@ void setup_context_frame(){
 }
 
 
+
+size_t get_size(uintptr_t base_addr, size_t stop_value){
+    uint64_t* entry = 0;
+    address_64_bits address = {0};
+    address.address = base_addr;
+    size_t size = 0;
+    for (; address.offset.plm4 < ARCH_N_ENTRY; address.offset.plm4++){
+        entry = (void*)(craft_addr(0, 0, 0, 0, address.offset.plm4 * 8));
+        if (*entry == 0){
+            size += (1<<39);
+            continue;
+        }
+   
+        for (; address.offset.plm3 < ARCH_N_ENTRY; address.offset.plm3++){
+            entry = (void*)(craft_addr(0, 0, 0, address.offset.plm4, address.offset.plm3 * 8));
+            if (*entry == 0){
+                size += (1 << 30);
+                continue;
+            }
+
+            for (; address.offset.plm2 < ARCH_N_ENTRY; address.offset.plm2++){
+                entry = (void*)craft_addr(0, 0, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
+                if (*entry == 0){
+                    size += (1 << 21);
+                    continue;
+                }
+                
+                for (; address.offset.plm1 < ARCH_N_ENTRY; address.offset.plm1++){
+                    entry = (void*)craft_addr(0, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
+                    
+                    if (*entry == 0){
+                        size += (1 << 12);
+                        if(size >= stop_value)
+                            return size;
+                    }
+                    else
+                        return size;
+                }
+                address.offset.plm1 = 0;
+            }
+            address.offset.plm2 = 0;
+        }
+        address.offset.plm3 = 0;
+    }
+    return size;
+}
+uint64_t search_empty_space(uintptr_t base_addr){
+    uint64_t* entry = 0;
+    address_64_bits address = {0};
+    address.address = base_addr;
+        
+    for (; address.offset.plm4 < ARCH_N_ENTRY; address.offset.plm4++){
+        entry = (void*)(craft_addr(0, 0, 0, 0, address.offset.plm4 * 8));
+        if (*entry == 0)
+            return address.address;
+        
+        for (; address.offset.plm3 < ARCH_N_ENTRY; address.offset.plm3++){
+            entry = (void*)(craft_addr(0, 0, 0, address.offset.plm4, address.offset.plm3 * 8));
+            if (*entry == 0)
+                return address.address;
+
+            for (; address.offset.plm2 < ARCH_N_ENTRY; address.offset.plm2++){
+                entry = (void*)craft_addr(0, 0, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
+                if (*entry == 0)
+                    return address.address;
+                
+                for (; address.offset.plm1 < ARCH_N_ENTRY; address.offset.plm1++){
+                    entry = (void*)craft_addr(0, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
+                    if (*entry == 0)
+                        return address.address;
+                }
+                address.offset.plm1 = 0;
+            }
+            address.offset.plm2 = 0;
+        }
+        address.offset.plm3 = 0;
+    }
+    LOG_ERR("pas d'espace disponible à partir de l'addresse {x}", base_addr);
+    return 0;
+}
+
+void* map_physical(uint64_t physical_addr, size_t size){
+    uint64_t address = search_empty_space(craft_addr(1,0,0,0,0));
+    size_t space = 0;
+    while(address != 0 && (space = get_size(address, size)) < size){
+        address = search_empty_space(address + space);
+    }
+    if(address == 0){
+        LOG_PANIC("no more space available");
+    }
+    kmmap_physical(address, physical_addr, size, 2);
+    LOG_INFO("Available address: {x}", address);
+
+    return (void*)address;
+}
+
 void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t flags){
     uint64_t offset_l4 = SHIFTR(addr, 9, 39);
     uint64_t offset_l3 = SHIFTR(addr, 9, 30);
