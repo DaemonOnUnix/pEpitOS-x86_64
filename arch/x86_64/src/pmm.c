@@ -77,6 +77,8 @@ uintptr_t get_frame(){
                 uint64_t current_frame = align(available[z].base) + ((cur_frame_n) * pg_size);
                 if(current_frame < align(available[z].base) + available[z].length - pg_size){
                     flip_frame(CUR_FRAME_N);
+                    for(uint64_t* i = physical_to_stivale(current_frame); (uintptr_t)i < (uintptr_t)physical_to_stivale(current_frame + pg_size); i++)
+                        *i = 0;
                     return current_frame;
                 }
                 cur_frame_n -= available[z].length / pg_size;
