@@ -11,6 +11,7 @@
 #include "intel/cpuinfo.h"
 #include "intel/asm.h"
 #include "UEFI/RSDT.h"
+#include "SMP/SMP.h"
 
 void _start(struct stivale2_struct *stivale2_struct) {
 
@@ -24,6 +25,13 @@ void _start(struct stivale2_struct *stivale2_struct) {
     
     struct stivale2_struct_tag_memmap * memmap_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MEMMAP_ID);
     LOG_INFO("Memory map at {x}, has {d} entries.", memmap_tag, memmap_tag->entries);
+
+    struct stivale2_struct_tag_smp* smp_infos;
+    smp_infos = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_SMP_ID);
+    smp_infos = physical_to_stivale(smp_infos);
+
+    ASSERT(smp_infos->cpu_count > 0, "CPU count is {d}, at addr {x}", "CPU count is {d}, at addr {x}", smp_infos->cpu_count, (uintptr_t)smp_infos);
+
 
     struct stivale2_struct_tag_rsdp * rsdp_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_RSDP_ID);
     parse_RSDP(rsdp_tag->rsdp);
@@ -68,6 +76,10 @@ void _start(struct stivale2_struct *stivale2_struct) {
     enable_APIC();
     init_APIC_timer();
 
+    // ASSERT(smp_infos->cpu_count == 2, "CPU count is {d}, at addr {x}", "CPU count is {d}, at addr {x}", smp_infos->cpu_count, (uintptr_t)smp_infos);
+
+    launch_APs(smp_infos);
+
     // while(1) asm volatile("hlt");
 
     // a[0] = 5;
@@ -95,6 +107,6 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     // asm volatile("jmp %0"::"a"(stivale2_struct));
 
-    LOG_PANIC("Halting...");
+    LOG_PANIC("Halting... ({d})", get_core_id_cpuid());
     HALT();
 }

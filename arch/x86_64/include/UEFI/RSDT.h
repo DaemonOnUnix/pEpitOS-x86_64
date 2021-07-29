@@ -3,7 +3,9 @@
 
 #include "freestanding.h"
 #include "ACPI.h"
+
 #define MADT_ENTRY_START 0x2c
+#define MAX_CORE 16
 typedef struct {
     char Signature[8];
     uint8_t Checksum;
@@ -74,10 +76,10 @@ typedef struct {
 
 typedef struct {
     size_t numcore;
-    madt_lapic_entry_t lapics[10];
+    madt_lapic_entry_t lapics[MAX_CORE];
     uint64_t lapic_address;
     ioapic_entry_t ioapic;
-    interrupt_source_override interrupt[10];
+    interrupt_source_override interrupt[MAX_CORE];
     size_t interrupt_count;
 } apic_info_t;
 

@@ -91,6 +91,9 @@ uintptr_t get_frame(){
 
 
 void init_pmm(uintptr_t virtual_addr){
+
+    ONCE();
+    
     is_bitmap_set = 1;
     bitmap_addr = (uint64_t*)virtual_addr;
 

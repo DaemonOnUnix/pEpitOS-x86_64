@@ -38,7 +38,7 @@ $(shell mkdir -p $(addprefix $(BUILD)/,$(SRCDIRS)))
 all: NODEBUG
 
 NODEBUG: $(KERNEL).iso
-	@qemu-system-x86_64 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 2G
+	@qemu-system-x86_64 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 1G -smp 3
 
 DEBUG: $(KERNEL).iso
 	#@bochs

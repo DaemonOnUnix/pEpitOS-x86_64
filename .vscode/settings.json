@@ -3,6 +3,8 @@
         "*.s": "platformio-debug.asm",
         "queue": "cpp",
         "pmm.h": "c",
-        "vmm.h": "c"
+        "vmm.h": "c",
+        "stdatomic.h": "c",
+        "locks.h": "c"
     }
 }
