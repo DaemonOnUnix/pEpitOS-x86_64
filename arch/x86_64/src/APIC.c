@@ -5,6 +5,7 @@
 #include "log/log.h"
 #include "utils/bitsmanip.h"
 #include "vmm/vmm.h"
+#include "intel/asm.h"
 
 static uintptr_t LAPIC_VIRTUAL_ADDRESS = 0;
 static uintptr_t IOAPIC_VIRTUAL_ADDRESS = 0;
@@ -34,13 +35,36 @@ void cpuWriteLAPIC(uint32_t reg, uint32_t value){
     *(uint32_t*)(lapic + reg)  = value;
 }
 
+void cpu_send_EOI(){
+    cpuWriteLAPIC(0xB0,0);
+}
+
+#define PIC1 0x20
+#define PIC1_COMMAND PIC1
+#define PIC1_OFFSET 0x20
+#define PIC1_DATA (PIC1 + 1)
+
+#define PIC2 0xA0
+#define PIC2_COMMAND PIC2
+#define PIC2_OFFSET 0x28
+#define PIC2_DATA (PIC2 + 1)
+
+void disable_pic() {
+
+
+    asm_out8(PIC2_DATA, 0xff);
+    asm_out8(PIC1_DATA, 0xff);
+
+
+
+}
 
 void redirect_interrupts(){
     ioapic_entry_t ioapic = apic_info.ioapic;
     for(size_t i = 0; i < apic_info.interrupt_count; i++){
         interrupt_source_override interrupt = apic_info.interrupt[i];
         if(ioapic.base < interrupt.global_system_interrupt && (size_t)interrupt.irq <= ioapic.max_redirection){
-            LOG_INFO("can redirect interrupt: {x}",interrupt.irq);
+            LOG_INFO("can redirect interrupt: {d}",interrupt.irq);
             uint32_t value = (interrupt.irq + 32) | (0 << 8) | (0 << 11) | (1 << 13) | (0 << 15);
             cpuWriteIoAPIC(IOAPIC_REDIRECTION_OFFSET + ((interrupt.irq - ioapic.base)*2), value);
             cpuWriteIoAPIC(IOAPIC_REDIRECTION_OFFSET + ((interrupt.irq - ioapic.base)*2)+1, apic_info.lapics[0].ACPI_id);
@@ -62,7 +86,7 @@ void enable_APIC(){
     LOG_INFO("I/O APIC Version: {x}, Maximum redirection is: {x}", SHIFTR(info, 8, 0), SHIFTR(info, 8, 16));
     LOG_INFO("APIC version: {x}",cpuReadLAPIC(0x30));
     LOG_INFO("Setting the spurious interrupt vector register");
-    cpuWriteLAPIC(SPURIOUS_VECTOR_REGISTER, cpuReadLAPIC(SPURIOUS_VECTOR_REGISTER) | SPURIOUS_ALL | LAPIC_ENABLE_BIT);
+    cpuWriteLAPIC(SPURIOUS_VECTOR_REGISTER, cpuReadLAPIC(SPURIOUS_VECTOR_REGISTER) | SPURIOUS_ALL);
     redirect_interrupts();
 }
 
@@ -79,4 +103,24 @@ void init_APIC_timer(){
     cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_MASKED);
     uint32_t ticksIn10ms = 0xFFFFFFFF - cpuReadLAPIC(APIC_REGISTER_TIMER_CURRCNT);
     LOG_INFO("There is {x} | {d} ticks in 10 ms", ticksIn10ms,ticksIn10ms);
+    cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, 32 | 0x20000);
+    cpuWriteLAPIC(APIC_REGISTER_TIMER_DIV, 0x3);
+    cpuWriteLAPIC(APIC_REGISTER_TIMER_INITCNT, ticksIn10ms*300);
+}
+
+
+
+void init_APIC_interrupt(){
+    LOG_INFO("Configuring non maskable interrupt")
+    for(size_t i = 0; i < apic_info.nmi_count;i++){
+        if(apic_info.nmis[i].ACPI_processor_id == 0xFF){
+            size_t lint_registers = 0x350 + (0x10 * apic_info.nmis[i].LINT);
+            size_t flags = apic_info.nmis[i].flags;
+            cpuWriteLAPIC(lint_registers,((flags & 2) << 13) | ((flags & 8) << 15));
+        }
+    }
+
+    disable_pic();
+    LOG_INFO("Enabling APIC");
+    cpuWriteLAPIC(SPURIOUS_VECTOR_REGISTER, cpuReadLAPIC(SPURIOUS_VECTOR_REGISTER) | SPURIOUS_ENABLE_BIT);
 }

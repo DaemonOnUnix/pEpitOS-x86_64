@@ -82,6 +82,12 @@ void parse_MADT(MADT* madt){
             apic_info.lapic_address = *((uint64_t *)(ptr + 4));
         }
         break;
+        case MADT_LAPIC_NNMI:
+        {
+            LOG_INFO("Non maskable int for processor: {x} | flags: {x} | LINT: {x}", ptr[2], *(uint16_t*)(ptr+3), ptr[5]);
+            apic_info.nmis[apic_info.nmi_count++] = *(LAPIC_NMI*)(ptr+2);
+        }
+        break;
         default:
             LOG_INFO("MADT entry {x} is not yet implemented", *ptr)
             break;

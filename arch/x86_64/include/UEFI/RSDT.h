@@ -69,6 +69,12 @@ typedef struct{
 } PACKED interrupt_source_override;
 
 typedef struct {
+    uint8_t ACPI_processor_id;
+    uint16_t flags;
+    uint8_t LINT;
+}PACKED LAPIC_NMI;
+
+typedef struct {
     char ACPI_Processor_id;
     char ACPI_id;
     uint32_t flags;
@@ -81,6 +87,8 @@ typedef struct {
     ioapic_entry_t ioapic;
     interrupt_source_override interrupt[MAX_CORE];
     size_t interrupt_count;
+    size_t nmi_count;
+    LAPIC_NMI nmis[10];
 } apic_info_t;
 
 typedef struct {
@@ -103,7 +111,7 @@ typedef struct {
 
 #define SPURIOUS_VECTOR_REGISTER 0xf0
 #define SPURIOUS_ALL 0Xff
-#define LAPIC_ENABLE_BIT 0x100
+#define SPURIOUS_ENABLE_BIT 0x100
 
 
 void parse_RSDP(uint64_t rsdp_address);

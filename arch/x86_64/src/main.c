@@ -71,14 +71,17 @@ void _start(struct stivale2_struct *stivale2_struct) {
     
     extern void enable_sse(void);
     enable_sse();
-
+    
     parse_RSDT();
     enable_APIC();
-    init_APIC_timer();
+    init_APIC_interrupt(); // I don't know why it is working, but it is working.
+    init_APIC_timer(); 
+
+    asm volatile("sti");
 
     // ASSERT(smp_infos->cpu_count == 2, "CPU count is {d}, at addr {x}", "CPU count is {d}, at addr {x}", smp_infos->cpu_count, (uintptr_t)smp_infos);
 
-    launch_APs(smp_infos);
+   // launch_APs(smp_infos);
 
     // while(1) asm volatile("hlt");
 
