@@ -107,6 +107,6 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     // asm volatile("jmp %0"::"a"(stivale2_struct));
 
-    LOG_PANIC("Halting... ({d})", get_core_id_cpuid());
+    LOG_PANIC("Halting... ({d})", COREID);
     HALT();
 }

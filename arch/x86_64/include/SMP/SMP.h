@@ -6,5 +6,11 @@
 uint8_t get_core_id_cpuid();
 void _start_core();
 void launch_APs(struct stivale2_struct_tag_smp* smp_infos);
+bool is_smp_active();
+uint32_t get_core_id_(uint32_t* lapic_id);
+uint32_t get_core_id();
+void set_core_id(uint32_t lapic_id);
+
+#define COREID (get_core_id())
 
 #endif

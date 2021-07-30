@@ -37,13 +37,17 @@ void kmmap(uint64_t addr, size_t size, uint64_t flags){
         
         for (; offset_l3 < ARCH_N_ENTRY; offset_l3++){
             entry = (void*)(craft_addr(0, 0, 0, offset_l4, offset_l3 * 8));
+            LOG_INFO("Entry 1: {x}", *entry);
             if (*entry == 0)
                 *entry = get_frame() | flags | 1;
+            LOG_INFO("Entry 1: {x}", *entry);
 
             for (; offset_l2 < ARCH_N_ENTRY; offset_l2++){
                 entry = (void*)craft_addr(0, 0, offset_l4, offset_l3, offset_l2 * 8);
+                LOG_INFO("Entry 2: {x}", *entry);
                 if (*entry == 0)
                     *entry = get_frame() | flags | 1;
+                LOG_INFO("Entry 2: {x}", *entry);
                 
                 for (; offset_l1 < ARCH_N_ENTRY; offset_l1++){
                     entry = (void*)craft_addr(0, offset_l4, offset_l3, offset_l2, offset_l1 * 8);

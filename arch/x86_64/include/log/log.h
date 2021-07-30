@@ -3,6 +3,8 @@
 
 #include "freestanding.h"
 #include "intel/asm.h"
+#include "SMP/locks.h"
+#include "SMP/SMP.h"
 
 enum com_port
 {
@@ -95,10 +97,12 @@ void printf(char *format, ...);
         log(__LINE__);        \
         log(" -> ");
 
-#define LOG_OK(...)    {roprint(OK_STRING);    printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");}
-#define LOG_ERR(...)   {roprint(ERR_STRING);   printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");}
-#define LOG_INFO(...)  {roprint(INFO_STRING);  printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");}
-#define LOG_PANIC(...) {roprint(PANIC_STRING); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n");}
+CREATE_PROTOS(print);
+
+#define LOG_OK(...)    {get_lock_print(); roprint(OK_STRING);    if(is_smp_active()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
+#define LOG_ERR(...)   {get_lock_print(); roprint(ERR_STRING);   if(is_smp_active()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
+#define LOG_INFO(...)  {get_lock_print(); roprint(INFO_STRING);  if(is_smp_active()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
+#define LOG_PANIC(...) {get_lock_print(); roprint(PANIC_STRING); if(is_smp_active()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
 
 #define ASSERT(C, __TRUE, __FALSE, ...) {if(C){ LOG_OK(__TRUE, ##__VA_ARGS__); } else { LOG_PANIC(__FALSE, ##__VA_ARGS__); HALT();}}
 #define CHECK(C, __TRUE, __FALSE, ...) {if(C){ LOG_OK(__TRUE, ##__VA_ARGS__); } else { LOG_ERR(__FALSE, ##__VA_ARGS__);}}
