@@ -51,6 +51,11 @@ void k_invalid_opcode(volatile stackframe* regs){
     LOG_PANIC("Invalid opcode at {x}", regs->rip);
     panic_common_stub(regs);
 }
+void timer(volatile stackframe* regs){
+    LOG_INFO("timer plouf");
+}
+
+
 
 void attach_kernel_exceptions(){
     attach_isr(0, &k_div_by_zero);
@@ -59,6 +64,7 @@ void attach_kernel_exceptions(){
     attach_isr(6, &k_invalid_opcode);
     attach_isr(13, &k_gpf);
     attach_isr(14, &k_page_fault);
+    attach_isr(32, &timer);
     attach_isr(127, &change_debug_mode);
     LOG_OK("Kernel exceptions attached to ISRs.");
 }

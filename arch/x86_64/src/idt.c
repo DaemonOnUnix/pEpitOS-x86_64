@@ -2,7 +2,7 @@
 #include "tables/gdt.h"
 #include "log/log.h"
 #include "interrupts/stackframe.h"
-
+#include "UEFI/APIC.h"
 #define nIDT_ENTRY 256
 
 typedef struct {
@@ -102,6 +102,7 @@ extern void isr129(void);
 #define IDT_TRAP      (0b00001111)
 
 #define set_isr_entry(n) idt.entries[n] = create_idt_entry((uintptr_t)isr## n, 0, IDT_PRESENT | IDT_INTERRUPT)
+#define set_irq_entry(n) idt.entries[n+32] = create_idt_entry((uintptr_t)irq## n, 0, IDT_PRESENT | IDT_INTERRUPT)
 
 extern void load_idt(idt_descriptor_t*);
 
@@ -146,6 +147,8 @@ void setup_idt(void) {
     set_isr_entry(29);
     set_isr_entry(30);
     set_isr_entry(31);
+    set_irq_entry(0);
+
 
     set_isr_entry(127);
     set_isr_entry(129);
@@ -202,6 +205,25 @@ void isr_handler(volatile stackframe regs) {
         log_stackframe(&regs);
         while(1) asm volatile("hlt");
     }
+}
+void irq_handler(volatile stackframe regs) {
+    
+    // LOG_INFO("ISR handler called...");
+    // log_stackframe(&regs);
+    // LOG_INFO("Interrupt number : {d}.", regs.int_no);
+    void(*cur_isr)(volatile stackframe*) = isr[regs.int_no];
+
+    LOG_INFO("Interrupt number {d}, ISR to call at : {x}", regs.int_no, cur_isr);
+
+
+	if (cur_isr != 0){
+		cur_isr(&regs);
+	} else {
+        LOG_PANIC("Calling null isr");
+        log_stackframe(&regs);
+        while(1) asm volatile("hlt");
+    }
+    cpu_send_EOI();
 }
 
 void attach_isr(uint8_t interrupt_number, void(*isr_to_add)(volatile stackframe*)) {

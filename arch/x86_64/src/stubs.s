@@ -128,7 +128,6 @@ isr_common_stub:
 %macro IRQ 2
 [GLOBAL irq%1]
     irq%1:
-        cli
         push 0
         push %2
         jmp irq_common_stub
@@ -151,30 +150,18 @@ IRQ 13, 45
 IRQ 14, 46
 IRQ 15, 47
 
-
+extern irq_handler
 irq_common_stub:
-   save_context
-
-   mov ax, ds
-   push rax
-
-   mov ax, 0x10
-   mov ds, ax
-   mov es, ax
-   mov fs, ax
-   mov gs, ax
-
-   ; call irq_handler ;Not important atm
-
-   pop rbx
-   mov ds, bx
-   mov es, bx
-   mov fs, bx
-   mov gs, bx
-   load_context
-   add esp, 8
-   sti
-   iretq
+    save_context
+    mov rax, 7FFFFFFFF000h
+    fxsave64 [rax]
+    call irq_handler
+    mov rax, 7FFFFFFFF000h
+    fxrstor64 [rax]
+    load_context
+    add rsp, 16
+    sti
+    iretq
 
 global enable_sse
 enable_sse:
