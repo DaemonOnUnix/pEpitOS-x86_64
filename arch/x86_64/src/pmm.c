@@ -72,15 +72,18 @@ uintptr_t get_frame(){
                 j++;
             size_t z = 0;
             uint64_t cur_frame_n = i * 64 + j;
+            // LOG_INFO("i = {x}, j = {x}", i, j)
             const uint64_t CUR_FRAME_N = cur_frame_n;
             while(available[z].length){
                 uint64_t current_frame = align(available[z].base) + ((cur_frame_n) * pg_size);
-                if(current_frame < align(available[z].base) + available[z].length - pg_size){
+                // LOG_INFO("Current frame to check : {x} = align({x}) + {x} * {x}", current_frame, available[z].base, cur_frame_n, pg_size);
+                if(current_frame <= align(available[z].base) + available[z].length - pg_size){
                     flip_frame(CUR_FRAME_N);
                     for(uint64_t* i = physical_to_stivale(current_frame); (uintptr_t)i < (uintptr_t)physical_to_stivale(current_frame + pg_size); i++)
                         *i = 0;
                     return current_frame;
                 }
+                // LOG_INFO("{x} -= {x} / {x} ({x})", cur_frame_n, available[z].length, pg_size, available[z].length / pg_size);
                 cur_frame_n -= available[z].length / pg_size;
                 z++;
             }
