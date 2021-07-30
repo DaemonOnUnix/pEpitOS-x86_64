@@ -81,7 +81,7 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     // ASSERT(smp_infos->cpu_count == 2, "CPU count is {d}, at addr {x}", "CPU count is {d}, at addr {x}", smp_infos->cpu_count, (uintptr_t)smp_infos);
 
-   // launch_APs(smp_infos);
+    launch_APs(smp_infos);
 
     // while(1) asm volatile("hlt");
 
