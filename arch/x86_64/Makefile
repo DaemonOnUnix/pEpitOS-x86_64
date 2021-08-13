@@ -3,6 +3,7 @@ CC = gcc-9
 CFLAGS = -Wall -Wextra -O0 -Iinclude -g
 ASMPARAM = -f elf64 -F dwarf
 BUILD = build
+CORE_NUM = 16
 
 INTERNALLDFLAGS :=     \
 	-nostdlib      \
@@ -38,7 +39,7 @@ $(shell mkdir -p $(addprefix $(BUILD)/,$(SRCDIRS)))
 all: NODEBUG
 
 NODEBUG: $(KERNEL).iso
-	@qemu-system-x86_64 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 1G -smp 8
+	@qemu-system-x86_64 -cdrom $< -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 1G -smp $(CORE_NUM)
 
 DEBUG: $(KERNEL).iso
 	#@bochs

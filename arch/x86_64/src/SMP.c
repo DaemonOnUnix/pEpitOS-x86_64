@@ -15,6 +15,7 @@
 #include "SMP/SMP.h"
 #include <stdatomic.h>
 #include "SMP/locks.h"
+#include "UEFI/APIC.h"
 
 
 static uint8_t value = 0;
@@ -38,24 +39,22 @@ void set_core_id(uint32_t lapic_id){
 }
 
 uint32_t get_core_id(){
-    return id;
+    return cpuReadLAPIC(0x20) >> 24;
 }
 
 CREATE_LOCK(1)
-CREATE_LOCK(2)
+CREATE_LOCK(Bootstrap)
 
 void _start_core(struct stivale2_smp_info* smp_info){
+    
+    GRAB_LOCK(LOCK_NAME(Bootstrap));
+    RELEASE_LOCK(LOCK_NAME(Bootstrap));
 
     BEGIN_BOTTLENECK(1);
 
-    BEGIN_BOTTLENECK(2);
-    set_core_id(smp_info->lapic_id);
-    LOG_OK("Booting processor number {d}", COREID);
-    LOG_INFO("SMP is active : {d}", is_smp_active());
-    END_BOTTLENECK(2);
-
-
-    // LOG_OK("Booting processor number {d}", current_core);
+    smp_status = 0;
+    
+    LOG_INFO("Booting an AP.");
 
     setup_gdt();
     setup_idt();
@@ -67,7 +66,10 @@ void _start_core(struct stivale2_smp_info* smp_info){
     enable_sse();
     LOG_OK("Page directory created and loaded successfully.");
 
+
     enable_APIC();
+    smp_status = 1;
+
     init_APIC_timer();
 
     smp_info = physical_to_stivale(smp_info);
@@ -75,7 +77,6 @@ void _start_core(struct stivale2_smp_info* smp_info){
     LOG_PANIC("Halting CPU {d}", COREID);
 
     END_BOTTLENECK(1);
-    // END_BOTTLENECK(1);
 
     HALT();
 
@@ -84,6 +85,7 @@ void _start_core(struct stivale2_smp_info* smp_info){
 void launch_APs(struct stivale2_struct_tag_smp* smp_infos){
     if(smp_infos->cpu_count)
         smp_status = 1;
+    GRAB_LOCK(LOCK_NAME(Bootstrap));
     for(size_t i = 0; i < smp_infos->cpu_count;i++){
         if(smp_infos->bsp_lapic_id == smp_infos->smp_info[i].lapic_id){
             set_core_id(smp_infos->smp_info[i].lapic_id);
@@ -93,6 +95,7 @@ void launch_APs(struct stivale2_struct_tag_smp* smp_infos){
         smp_infos->smp_info[i].target_stack = physical_to_stivale(get_frame()) + 4096-64;
         smp_infos->smp_info[i].goto_address = (uint64_t)_start_core;
     }
+    RELEASE_LOCK(LOCK_NAME(Bootstrap));
 }
 
 bool is_smp_active(){

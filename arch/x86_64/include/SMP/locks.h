@@ -17,6 +17,7 @@ typedef struct {
 #define END_BOTTLENECK(name) RELEASE_LOCK(_lock_##name);
 
 #define CREATE_LOCK(name) static lock _lock_##name;
+#define LOCK_NAME(x) _lock_##x
 
 #define CREATE_GET(name) void get_lock_##name () {  GRAB_LOCK(_lock_ ##name); }
 #define CREATE_SET_SYNC(name) void set_lock_##name () { RELEASE_LOCK(_lock_ ##name); }
