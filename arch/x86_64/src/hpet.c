@@ -33,7 +33,7 @@ void hpet_init(HPET* hpet){
 
 void hpet_reset(){
     LOG_INFO("Resetting hpet timer");
-    char* ptr = (char*)hpet_register_address;
+    volatile char* ptr = (char*)hpet_register_address;
     write_mem64(ptr+HPET_General_Configuration, read_mem64(ptr+HPET_General_Configuration) & (~1ull));
     write_mem64(ptr+HPET_Main_Counter_Value,0);
 }

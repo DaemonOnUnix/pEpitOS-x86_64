@@ -18,8 +18,8 @@ void parse_RSDP(uint64_t rsdp_address){
     if(desc_rsdp_20->firstPart.Revision)
         desc_rsdp_20 = (RSDPDescriptor20*)rsdp_address;
 
-    char rsdp_string[9];
-    memcpy(rsdp_string , (void*)rsdp_address, 8);
+    volatile char rsdp_string[9] = {0};
+    memcpy(rsdp_string , (volatile void*)rsdp_address, 8);
     LOG_INFO("RSDP is located at {x}, rsdp string is \"{s}\"", rsdp_address, rsdp_string);
     
     ASSERT(!strcmp(rsdp_string,"RSD PTR "), "Got RSDP successfully at address {x}", "Error while getting RSDP at address {x}", rsdp_address);

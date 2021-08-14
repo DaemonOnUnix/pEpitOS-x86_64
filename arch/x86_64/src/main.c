@@ -69,9 +69,11 @@ void _start(struct stivale2_struct *stivale2_struct) {
 
     setup_context_frame();
     
+    LOG_OK("PASSED !!!!!!!!!!!!!!!!");
     extern void enable_sse(void);
     enable_sse();
     
+
     parse_RSDT();
     enable_APIC();
     init_APIC_interrupt(); // I don't know why it is working, but it is working.

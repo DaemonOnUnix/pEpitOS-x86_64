@@ -177,9 +177,10 @@ void setup_context_frame(){
 
     LOG_INFO("Current task currently supporting context frame.")
 
-    asm volatile("push rax; mov rax, cr4; or rax, (1<<9); mov cr4, rax");
+    asm volatile("push rax; mov rax, cr4; or rax, (1<<9); mov cr4, rax; pop rax");
 
     LOG_OK("Context frame successfully setup at address {x}", context_save_addr);
+    LOG_OK("Passing");
 }
 
 

@@ -1,6 +1,6 @@
 KERNEL := pEpitOS
 CC = gcc-9
-CFLAGS = -Wall -Wextra -O0 -Iinclude -g
+CFLAGS = -Wall -Wextra -O3 -Iinclude -g
 ASMPARAM = -f elf64 -F dwarf
 BUILD = build
 CORE_NUM = 16

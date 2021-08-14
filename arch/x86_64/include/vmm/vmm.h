@@ -12,6 +12,7 @@
 #define ARCH_PAGE_SIZE 0x1000
 #define ARCH_N_ENTRY   512
 #define CLEAN_BITS_MASK (~ (0xFFFull))
+#define RECURSIVE_MAPPING_ENTRY 0
 
 size_t virtual_to_physical(size_t addr);
 
