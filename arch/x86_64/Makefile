@@ -5,6 +5,10 @@ ASMPARAM = -f elf64 -F dwarf
 BUILD = build
 CORE_NUM = 16
 
+ASSETS = ../../assets/
+
+LOGO = $(ASSETS)/pEpitOS-logo-1.bmp
+
 INTERNALLDFLAGS :=     \
 	-nostdlib      \
 	-Tlink.ld    \
@@ -49,7 +53,7 @@ $(KERNEL).iso: $(KERNEL).elf limine/Makefile
 	@# Create a directory which will be our ISO root.
 	@mkdir -p iso_root
 	@# Copy the relevant files over.
-	@cp -v $(KERNEL).elf limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin iso_root/ 
+	@cp -v $(KERNEL).elf limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin $(LOGO) iso_root/ 
 	@# Create the bootable ISO.
 	@xorriso -as mkisofs -b limine-cd.bin \
 			-no-emul-boot -boot-load-size 4 -boot-info-table \
