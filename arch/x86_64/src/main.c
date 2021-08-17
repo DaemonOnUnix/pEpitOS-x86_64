@@ -12,6 +12,9 @@
 #include "intel/asm.h"
 #include "UEFI/RSDT.h"
 #include "SMP/SMP.h"
+#include "UEFI/APIC.h"
+#include "tasking/tasking.h"
+#include "interrupts/defined_interrupts.h"
 
 void _start(struct stivale2_struct *stivale2_struct) {
 
@@ -111,6 +114,29 @@ void _start(struct stivale2_struct *stivale2_struct) {
     // LOG_OK("Returned from breakpoint.");
 
     // asm volatile("jmp %0"::"a"(stivale2_struct));
+
+    while (get_booted_cpus_count() != smp_infos->cpu_count);
+    LOG_OK("All CPUs booted successfully ! ({d} cores)", get_booted_cpus_count());
+    // asm volatile("int 0x7F");
+    // asm volatile("sti");
+    // asm volatile("int 0x7F");
+    // asm volatile("cli");
+    // send_interrupt_to_core(1, 32);
+    enable_tasking();
+
+    //TESTS
+    /*
+    task _test = create_task();
+    task test = create_task_from_func(&alol, 0x2000, 0xdeadb000, false, 0x8, 0x10, 0);
+    asm volatile("cli");
+    modify_target_task(COREID, &test);
+
+    asm volatile("mov %0, cr3" : "=a"(kernel.page_directory) :);
+
+    if(!has_switched)
+        TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
+    */
+    //END TESTS
 
     LOG_PANIC("Halting... ({d})", COREID);
     HALT();

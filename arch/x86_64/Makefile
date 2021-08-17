@@ -3,7 +3,7 @@ CC = gcc-9
 CFLAGS = -Wall -Wextra -O3 -Iinclude -g
 ASMPARAM = -f elf64 -F dwarf
 BUILD = build
-CORE_NUM = 16
+CORE_NUM = 2
 
 ASSETS = ../../assets/
 

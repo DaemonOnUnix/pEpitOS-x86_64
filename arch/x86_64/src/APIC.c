@@ -13,7 +13,17 @@ static uintptr_t IOAPIC_VIRTUAL_ADDRESS = 0;
 
 extern apic_info_t apic_info;
 
-void cpuWriteIoAPIC(uint32_t reg, uint32_t value ){
+void map_pics(){
+    if(!LAPIC_VIRTUAL_ADDRESS || !IOAPIC_VIRTUAL_ADDRESS){
+        LOG_PANIC("Can't map PICs with unitialized data.");
+        HALT();
+    }
+    // HALT();
+    kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address, IOAPIC_LENGTH*2, 2);
+    kmmap_physical(LAPIC_VIRTUAL_ADDRESS, apic_info.lapic_address, LAPIC_LENGTH*2, 2);    
+}
+
+void cpuWriteIoAPIC(uint32_t reg, uint32_t value){
     uint32_t volatile *ioapic = (uint32_t volatile *)IOAPIC_VIRTUAL_ADDRESS;
     ioapic[0] = (reg & 0xff);
     ioapic[4] = value;
@@ -123,4 +133,15 @@ void init_APIC_interrupt(){
     disable_pic();
     LOG_INFO("Enabling APIC");
     cpuWriteLAPIC(SPURIOUS_VECTOR_REGISTER, cpuReadLAPIC(SPURIOUS_VECTOR_REGISTER) | SPURIOUS_ENABLE_BIT);
+}
+
+void send_interrupt_to_core(uint8_t core_number, uint8_t interrupt_number){
+    cpuWriteLAPIC(0x310, core_number << 24);
+    int_message to_send;
+    to_send.bitfield.vector_number = interrupt_number;
+    //to_send.bitfield.INIt_level = 1;
+    to_send.bitfield.destination_type = 2;
+    cpuWriteLAPIC(0x300, to_send.value);
+    volatile interrupt_message* result = LAPIC_VIRTUAL_ADDRESS + 0x300;
+    while(result->delivery_status);
 }

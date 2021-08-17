@@ -20,6 +20,11 @@
 
 static uint8_t value = 0;
 static bool smp_status = 0;
+static uint8_t booted_cpus_count = 1;
+
+uint8_t get_booted_cpus_count(){
+    return booted_cpus_count;
+}
 
 uint32_t get_core_id_(uint32_t* lapic_id){
     static uint32_t id = 0;
@@ -66,7 +71,7 @@ void _start_core(struct stivale2_smp_info* smp_info){
     enable_sse();
     LOG_OK("Page directory created and loaded successfully.");
 
-
+    // parse_RSDT();
     enable_APIC();
     smp_status = 1;
 
@@ -74,9 +79,13 @@ void _start_core(struct stivale2_smp_info* smp_info){
 
     smp_info = physical_to_stivale(smp_info);
     
+    booted_cpus_count++;
+    
     LOG_PANIC("Halting CPU {d}", COREID);
 
     END_BOTTLENECK(1);
+
+    asm volatile("sti");
 
     HALT();
 

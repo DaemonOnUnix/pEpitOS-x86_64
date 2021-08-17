@@ -8,6 +8,7 @@ static uint64_t* limine_page_directory_addr = 0;
 void init_vmm(){
     LOG_INFO("Initialising Virtual Memory Manager...");
     asm volatile("mov %0, cr3" : "=a"(limine_page_directory_addr) :);
+    limine_page_directory_addr = physical_to_stivale(limine_page_directory_addr);
     uint64_t* new_pdp = (uint64_t*)get_frame();
     uint64_t* new_pd = physical_to_stivale(new_pdp);
     for(uint32_t i = 0; i < 512; i++)
@@ -316,10 +317,10 @@ void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t
                     entry = (void*)craft_addr(0, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
                     uint64_t space_left = ARCH_PAGE_SIZE - (uint64_t)offset_l0;
                     if (*entry != 0){
-                        LOG_ERR("Physical page {x} at logical address {x} will be replace", *entry, entry);
+                        // LOG_ERR("Physical page {x} at logical address {x} will be replace", *entry, entry);
                     }
                     *entry = physical_addr | flags | 1;
-                    LOG_INFO("Mapping physical page {x} at address {x} ( {d} | {d} | {d} | {d} | {d} ), remaining size on frame: {x}", *entry, craft_addr(offset_l4, offset_l3, offset_l2, offset_l1, 0),offset_l4,offset_l3,offset_l2,offset_l1,offset_l0, space_left);
+                    // LOG_INFO("Mapping physical page {x} at address {x} ( {d} | {d} | {d} | {d} | {d} ), remaining size on frame: {x}", *entry, craft_addr(offset_l4, offset_l3, offset_l2, offset_l1, 0),offset_l4,offset_l3,offset_l2,offset_l1,offset_l0, space_left);
                     if (space_left >= size)
                         return;
         

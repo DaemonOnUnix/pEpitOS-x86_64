@@ -23,6 +23,8 @@ typedef struct {
     uint64_t rbx;
     uint64_t rax;
     
+    // uint64_t rsp;
+
     uint64_t int_no;
     // uint32_t align1;
     uint64_t err_code;
