@@ -1,0 +1,8 @@
+limine/
+
+log.txt
+
+build/
+*.elf
+*.iso
+
