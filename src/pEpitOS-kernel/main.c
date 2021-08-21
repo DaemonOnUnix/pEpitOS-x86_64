@@ -1,8 +1,8 @@
 #include "arch/arch.h"
 
-void _start(struct stivale2_struct *stivale2_struct) {
+void _start(void* generic_structure) {
     
-    bootstrap_arch(stivale2_struct);
+    bootstrap_arch(generic_structure);
 
 #   ifdef X86_64
     LOG_OK("x86_64 bootstrap finished !");
