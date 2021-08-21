@@ -10,7 +10,7 @@
 #define STIVALE2 1
 
 #include "freestanding.h"
-#include "log/log.h"
+#include "serial/com.h"
 #include "thirdparties/stivale2.h"
 #include "interrupts/stackframe.h"
 #include "SMP/SMP.h"

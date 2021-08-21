@@ -1,4 +1,5 @@
 #include "arch/arch.h"
+#include "log/log.h"
 
 void kernel_main(void* generic_structure) {
     
