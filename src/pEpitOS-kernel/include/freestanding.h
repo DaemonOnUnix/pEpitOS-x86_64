@@ -18,9 +18,4 @@
 
 #include "utils/utils.h"
 
-void* memset(void* b, int c, size_t len);
-void* memcpy(void* dest, const void* src, size_t n);
-
-bool strcmp(char* str1, char*str2);
-// typedef uint64_t size_t;
 #endif
