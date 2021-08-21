@@ -19,19 +19,19 @@
         }
     ],
     "version": 4
-}*/
-{
+}*/{
     "configurations": [
         {
             "name": "Linux",
             "includePath": [
                 "${default}",
                 "${workspaceFolder}/src/arch/x86_64/include",
-                "${workspaceFolder}/src/pEpitOS-kernel"
+                "${workspaceFolder}/src/pEpitOS-kernel",
+                "${workspaceFolder}/src/pEpitOS-kernel/include"
             ],
             "defines": [],
-            "compilerPath": "/usr/bin/gcc",
-            "cStandard": "c99"
+            "compilerPath": "/usr/bin/gcc-9",
+            "cStandard": "c17"
         }
     ],
     "version": 4
