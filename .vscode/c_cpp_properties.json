@@ -26,7 +26,8 @@
             "name": "Linux",
             "includePath": [
                 "${default}",
-                "${workspaceFolder}/arch/x86_64/include"
+                "${workspaceFolder}/src/arch/x86_64/include",
+                "${workspaceFolder}/src/pEpitOS-kernel"
             ],
             "defines": [],
             "compilerPath": "/usr/bin/gcc",

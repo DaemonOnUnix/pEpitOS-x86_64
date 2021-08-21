@@ -1,3 +1,5 @@
+#include "arch/arch.h"
+
 #include "thirdparties/stivale2.h"
 #include "freestanding.h"
 #include "log/log.h"
@@ -16,9 +18,23 @@
 #include "tasking/tasking.h"
 #include "interrupts/defined_interrupts.h"
 
-#if 0
-void _start(struct stivale2_struct *stivale2_struct) {
+void enable_ints(){
+    asm volatile("sti");
+}
 
+void disable_ints(){
+    asm volatile("cli");
+}
+
+void halt(){
+    HALT();
+}
+
+void enable_mapping(mapping_t mapping){
+    asm volatile("mov cr3, %0" :: "a"(mapping));
+}
+
+void bootstrap_arch(struct stivale2_struct *stivale2_struct){
     struct stivale2_struct_tag_framebuffer *framebuffer_tag;
     framebuffer_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
 
@@ -138,8 +154,4 @@ void _start(struct stivale2_struct *stivale2_struct) {
         TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
     */
     //END TESTS
-
-    LOG_PANIC("Halting... ({d})", COREID);
-    HALT();
 }
-#endif
