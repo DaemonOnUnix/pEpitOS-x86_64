@@ -30,9 +30,9 @@ void cpuWriteIoAPIC(uint32_t reg, uint32_t value){
 }
 
 uint32_t cpuReadIoAPIC(uint32_t reg){
-  uint32_t volatile *ioapic = (uint32_t volatile *)IOAPIC_VIRTUAL_ADDRESS;
-  ioapic[0] = (reg & 0xff);
-  return ioapic[4];
+    uint32_t volatile *ioapic = (uint32_t volatile *)IOAPIC_VIRTUAL_ADDRESS;
+    ioapic[0] = (reg & 0xff);
+    return ioapic[4];
 }
 
 uint32_t cpuReadLAPIC(uint32_t reg){
