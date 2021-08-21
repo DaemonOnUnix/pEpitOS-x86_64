@@ -24,7 +24,6 @@ load_idt:
 %macro ISR_NOERRCODE 1  ; define a macro, taking one parameter
     [GLOBAL isr%1]        ; %1 accesses the first parameter.
     isr%1:
-        ; cli
         push QWORD 128
         push QWORD %1
         jmp isr_common_stub
@@ -33,13 +32,11 @@ load_idt:
 %macro ISR_ERRCODE 1
     [GLOBAL isr%1]
     isr%1:
-        ; cli
         push QWORD %1
         jmp isr_common_stub
 %endmacro
 
 %macro save_context 0
-    ;push rsp
     push rax
     push rbx
     push rcx
@@ -73,7 +70,6 @@ load_idt:
     pop rcx
     pop rbx    
     pop rax
-    ;pop rsp
 %endmacro
 
 ISR_NOERRCODE  0
@@ -112,15 +108,19 @@ ISR_NOERRCODE 127
 ISR_NOERRCODE 128
 ISR_NOERRCODE 129
 
+global save_simd_context
+save_simd_context:
+    fxsave64 [rdi]
+    ret
+
+global load_simd_context
+load_simd_context:
+    fxrstor64 [rdi]
+    ret
+
 isr_common_stub:
     save_context
-    mov rax, 7FFFFFFFF000h
-    fxsave64 [rax]
-
     call isr_handler
-
-    mov rax, 7FFFFFFFF000h
-    fxrstor64 [rax]
     load_context
     add rsp, 16
     iretq
@@ -153,11 +153,7 @@ IRQ 15, 47
 extern irq_handler
 irq_common_stub:
     save_context
-    mov rax, 7FFFFFFFF000h
-    fxsave64 [rax]
     call irq_handler
-    mov rax, 7FFFFFFFF000h
-    fxrstor64 [rax]
     load_context
     add rsp, 16
     sti

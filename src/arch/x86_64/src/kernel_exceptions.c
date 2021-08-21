@@ -1,6 +1,8 @@
 #include "freestanding.h"
 #include "tables/idt.h"
 #include "log/log.h"
+#include "intel/simd.h"
+#include "interrupts/stackframe.h"
 
 void panic_common_stub(volatile stackframe* regs){
     LOG_PANIC("Keep kalm, don't panik. Here is a dump of the registers :");
@@ -52,6 +54,7 @@ void k_invalid_opcode(volatile stackframe* regs){
     panic_common_stub(regs);
 }
 void timer(volatile stackframe* regs){
+    save_simd_context(CONTEXT_FRAME_ADDR);
     LOG_INFO("timer plouf");
 }
 

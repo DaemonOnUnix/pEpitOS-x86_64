@@ -18,8 +18,10 @@
 
 typedef uint64_t mapping_t;
 typedef int8_t interrupt_t;
+typedef uint8_t core_id_t;
 
 typedef context_save context_save;
+#define stackframe stackframe
 #define stack_frame stack_save
 #define other_frame simd_save
 
