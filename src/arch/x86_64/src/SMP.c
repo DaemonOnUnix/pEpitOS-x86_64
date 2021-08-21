@@ -13,7 +13,7 @@
 #include "UEFI/RSDT.h"
 #include "SMP/SMP.h"
 #include <stdatomic.h>
-#include "SMP/locks.h"
+#include "multicore/lock.h"
 #include "UEFI/APIC.h"
 
 
