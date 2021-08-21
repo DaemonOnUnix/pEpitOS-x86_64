@@ -1,6 +1,6 @@
 #include "arch/arch.h"
 
-void _start(void* generic_structure) {
+void kernel_main(void* generic_structure) {
     
     bootstrap_arch(generic_structure);
 

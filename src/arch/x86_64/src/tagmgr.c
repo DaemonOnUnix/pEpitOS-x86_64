@@ -4,6 +4,8 @@
 static uint8_t stack[8192];
 void _start(struct stivale2_struct *stivale2_struct);
 
+//extern void* _start;
+
 void *stivale2_get_tag(struct stivale2_struct *stivale2_struct, uint64_t id) {
     struct stivale2_tag *current_tag = (void *)stivale2_struct->tags;
     for (;;) {

@@ -19,9 +19,11 @@ ISO_FILES = $(KERNEL).elf limine.cfg limine/limine.sys limine/limine-cd.bin limi
 
 CORE_NUM = 2
 
+LINK_SCRIPT = $(ARCH_FOLDER)/$(ARCH)/link.ld
+
 INTERNALLDFLAGS :=     \
 	-nostdlib      \
-	-Tlink.ld    \
+	-T$(LINK_SCRIPT)    \
 	-z max-page-size=0x1000\
 	#-Wl,-static,-pie,--no-dynamic-linker,-ztext -fno-pic -fpie 
 
@@ -59,7 +61,7 @@ $(shell mkdir -p $(addprefix $(BUILD)/,$(SRCDIRS)))
 
 all: NODEBUG
 
-.PHONY: all clean
+.PHONY: all clean NODEBUG DEBUG clean_deps
 
 NODEBUG: $(KERNEL).iso
 	@$(QEMU) $(QEMU_PARAMS_NODEBUG) $<

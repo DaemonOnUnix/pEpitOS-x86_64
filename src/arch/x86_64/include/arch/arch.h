@@ -12,11 +12,16 @@
 #include "freestanding.h"
 #include "log/log.h"
 #include "thirdparties/stivale2.h"
+#include "interrupts/stackframe.h"
 
 #define STRINGIFY(...) #__VA_ARGS__
 
 typedef uint64_t mapping_t;
 typedef int8_t interrupt_t;
+
+typedef context_save context_save;
+#define stack_frame stack_save
+#define other_frame simd_save
 
 void enable_ints();
 void disable_ints();
