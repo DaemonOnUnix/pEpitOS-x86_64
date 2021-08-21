@@ -3,7 +3,6 @@
 #include "thirdparties/stivale2.h"
 #include "freestanding.h"
 #include "log/log.h"
-#include "string/string.h"
 #include "thirdparties/stivalemgr.h"
 #include "tables/gdt.h"
 #include "tables/idt.h"
