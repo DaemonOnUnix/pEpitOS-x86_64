@@ -34,7 +34,10 @@ void enable_mapping(mapping_t mapping){
     asm volatile("mov cr3, %0" :: "a"(mapping));
 }
 
-void bootstrap_arch(struct stivale2_struct *stivale2_struct){
+void bootstrap_arch(void* structure){
+
+    struct stivale2_struct* stivale2_struct = (struct stivale2_struct*)structure;
+
     struct stivale2_struct_tag_framebuffer *framebuffer_tag;
     framebuffer_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_FRAMEBUFFER_ID);
 
