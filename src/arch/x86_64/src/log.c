@@ -1,6 +1,6 @@
 #include "serial/com.h"
 #include "intel/asm.h"
-#include "utils/convert.h"
+#include "utils/functions.h"
 
 void com_write_reg(enum com_port port, enum com_register reg, uint8_t value){
     asm_out8(port + reg, value);

@@ -3,7 +3,7 @@
 #include "UEFI/hpet.h"
 #include "freestanding.h"
 #include "log/log.h"
-#include "utils/bitsmanip.h"
+#include "utils/macros.h"
 #include "vmm/vmm.h"
 #include "intel/asm.h"
 

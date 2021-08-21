@@ -2,7 +2,7 @@
 #define kVMM
 
 #include "freestanding.h"
-#include "utils/bitsmanip.h"
+#include "utils/macros.h"
 
 #define mask_l0 MASK(12)
 #define mask_l1 MASK_SHIFT(9, (12))

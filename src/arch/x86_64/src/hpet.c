@@ -1,7 +1,7 @@
 #include "UEFI/hpet.h"
 #include "UEFI/RSDT.h"
 #include "log/log.h"
-#include "utils/bitsmanip.h"
+#include "utils/macros.h"
 #include "vmm/vmm.h"
 #include "intel/asm.h"
 
