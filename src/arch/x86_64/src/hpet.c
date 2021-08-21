@@ -3,7 +3,7 @@
 #include "log/log.h"
 #include "utils/bitsmanip.h"
 #include "vmm/vmm.h"
-
+#include "intel/asm.h"
 
 static uintptr_t hpet_register_address = 0;
 static size_t period = 0;
@@ -27,9 +27,7 @@ void hpet_init(HPET* hpet){
     period = (SHIFTR(value, 32, 32));
     LOG_INFO("HPET counter period is: {d} femtoseconds", period);
     
-}
-
-    
+}   
 
 void hpet_reset(){
     LOG_INFO("Resetting hpet timer");
