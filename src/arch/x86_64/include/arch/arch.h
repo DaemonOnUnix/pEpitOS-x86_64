@@ -18,8 +18,6 @@ void disable_ints();
 
 void enable_mapping(mapping_t);
 
-bool is_smp_active();
-
 void bootstrap_arch(struct stivale2_struct *stivale2_struct);
 
 void halt();
