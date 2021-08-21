@@ -1,6 +1,8 @@
 #ifndef ARCH_H
 #define ARCH_H
 
+#define X86_64 1
+
 #include "freestanding.h"
 #include "log/log.h"
 #include "thirdparties/stivale2.h"
