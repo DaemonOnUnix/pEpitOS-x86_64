@@ -1,4 +1,4 @@
-#include "log/log.h"
+#include "serial/com.h"
 #include "intel/asm.h"
 #include "utils/convert.h"
 
@@ -48,59 +48,4 @@ void com_initialize(enum com_port port)
     // turn on communication + redirect UART interrupt into ICU
     com_write_reg(port, COM_MODEM_CONTROL, COM_MODEM_DTR | COM_MODEM_RTS | COM_MODEM_OUT2);
     com_write_reg(port, COM_INTERRUPT, COM_INTERRUPT_WHEN_DATA_AVAILABLE);
-}
-
-void sprintf(char *format, char *buff, va_list args){
-    while (*format){
-        if (*format == '{' && format[1] && format[2] == '}'){
-            format++;
-            switch (*format){
-            case 'd':{
-                char buffer[30];
-                size_t d = va_arg(args, size_t);
-                char *newbuff = dec(d, buffer + 29);
-                while (*newbuff)
-                    *(buff++) = *(newbuff++);
-            }
-            break;
-            case 'x':{
-                char buffer[30];
-                size_t d = va_arg(args, size_t);
-                *(buff++) = '0';
-                *(buff++) = 'x';
-
-                char *newbuff = decX(d, buffer + 29);
-                while (*newbuff)
-                    *(buff++) = *(newbuff++);
-            }
-            break;
-            case 's':{
-                char *str = va_arg(args, char *);
-                while (*str)
-                    *(buff++) = *(str++);
-            }
-            break;
-            default:
-                break;
-            }
-            format++;
-        }
-        else{
-            *buff = *format;
-            buff++;
-        }
-        format++;
-    }
-    *buff = 0;
-}
-
-void printf(char *format, ...){
-    char buffer[500];
-    va_list args;
-    va_start(args, format);
-
-    sprintf(format, buffer, args);
-    va_end(args);
-
-    com_write(COM1, buffer, (size_t)(-1));
 }

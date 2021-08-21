@@ -13,6 +13,7 @@
 #include "log/log.h"
 #include "thirdparties/stivale2.h"
 #include "interrupts/stackframe.h"
+#include "SMP/SMP.h"
 
 #define STRINGIFY(...) #__VA_ARGS__
 
@@ -34,5 +35,12 @@ void enable_mapping(mapping_t);
 void bootstrap_arch(void*);
 
 void halt();
+
+#ifndef COREID
+#define COREID
+#endif
+
+#define is_multicore() is_smp_active()
+#define write_string(x) com_write(COM1, x, (size_t)(-1))
 
 #endif
