@@ -127,7 +127,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
                 {
                     LOG_ERR("Freeing were performed on plm2");
                     *entry = 0;
-                    free_frame(entry);
+                    free_frame((uintptr_t)entry);
                 }
                 offset_l1 = 0;
             }
@@ -136,7 +136,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
             {
                 LOG_ERR("Freeing were performed on plm3");
                 *entry = 0;
-                free_frame(entry);
+                free_frame((uintptr_t)entry);
             }
 
             offset_l2 = 0;
@@ -147,7 +147,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
         {
             LOG_ERR("Freeing were performed on plm4");
             *entry = 0;
-            free_frame(entry);
+            free_frame((uintptr_t)entry);
         }
     }
 }

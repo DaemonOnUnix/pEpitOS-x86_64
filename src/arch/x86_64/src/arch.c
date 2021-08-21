@@ -63,6 +63,7 @@ void bootstrap_arch(void* structure){
     attach_kernel_exceptions();
 
     cpu_abilities* cpuinfos = get_cpu_info();
+    UNUSED_VAR(cpuinfos);
 
     set_memory_map(memmap_tag);
 

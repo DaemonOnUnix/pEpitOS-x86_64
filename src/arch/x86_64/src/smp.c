@@ -17,7 +17,7 @@
 #include "UEFI/APIC.h"
 
 
-static uint8_t value = 0;
+// static uint8_t value = 0;
 static bool smp_status = 0;
 static uint8_t booted_cpus_count = 1;
 

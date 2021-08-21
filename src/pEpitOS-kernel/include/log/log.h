@@ -3,6 +3,7 @@
 
 #include "freestanding.h"
 #include "arch/arch.h"
+#include "multicore/lock.h"
 
 #define roprint(x) write_string(x)
 

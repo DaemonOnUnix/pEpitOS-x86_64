@@ -3,7 +3,7 @@
 
 #include "freestanding.h"
 
-void save_simd_context(uintptr_t addr);
-void load_simd_context(uintptr_t addr);
+void save_simd_context(void* addr);
+void load_simd_context(void* addr);
 
 #endif
