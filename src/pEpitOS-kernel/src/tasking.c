@@ -71,7 +71,7 @@ task create_task(){
         .page_directory = create_page_directory()
     };
     asm volatile("mov cr3, %0" :: "a"(to_return.page_directory));
-    map_pics();
+    initialize_mapping();
     LOG_INFO("PICs mapped in new task.");
     setup_context_frame();
     asm volatile("mov cr3, %0" :: "a"(current_page_directory));
@@ -103,7 +103,7 @@ task create_task_from_func(uintptr_t func_ptr,
     map_pics();
     LOG_INFO("PICs mapped in new task.");
     setup_context_frame();
-    kmmap(stack_virtual_addr & CLEAN_BITS_MASK, stack_size & CLEAN_BITS_MASK + ARCH_PAGE_SIZE, 3 & (is_userspace ? 4 : 0));
+    kmmap(stack_virtual_addr & CLEAN_BITS_MASK, (stack_size & CLEAN_BITS_MASK) + ARCH_PAGE_SIZE, 3 & (is_userspace ? 4 : 0));
     LOG_INFO("Creating task with func_ptr = {x}", func_ptr);
     get_context()->stack_save.rip = func_ptr;
     // get_context()->stack_save.useresp = 0xdeadb000 + 64 * 4;//(stack_virtual_addr + stack_size) & CLEAN_BITS_MASK ;

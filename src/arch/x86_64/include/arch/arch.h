@@ -14,6 +14,7 @@
 #include "thirdparties/stivale2.h"
 #include "interrupts/stackframe.h"
 #include "SMP/SMP.h"
+#include "UEFI/APIC.h"
 
 #define STRINGIFY(...) #__VA_ARGS__
 
@@ -31,6 +32,7 @@ void disable_ints();
 #define trigger_int(x) asm volatile("int " STRINGIFY(x))
 
 void enable_mapping(mapping_t);
+#define initialize_mapping() map_pics()
 
 void bootstrap_arch(void*);
 
@@ -42,5 +44,6 @@ void halt();
 
 #define is_multicore() is_smp_active()
 #define write_string(x) com_write(COM1, x, (size_t)(-1))
+
 
 #endif
