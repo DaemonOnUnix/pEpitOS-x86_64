@@ -19,7 +19,7 @@ void hpet_init(HPET* hpet){
         LOG_INFO("HPET is memory mapped at address {x} with register offset {x}",hpet->address_base.address ,hpet->address_base.register_bit_width);
     }
     
-    hpet_register_address = map_physical(hpet->address_base.address, 4096);
+    hpet_register_address = (uintptr_t)map_physical(hpet->address_base.address, 4096);
     LOG_INFO("HPET found at address: {x} and mapped at address {x}", hpet->address_base.address, hpet_register_address);
     
     uint64_t value = read_mem64(hpet_register_address);

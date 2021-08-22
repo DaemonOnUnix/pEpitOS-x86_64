@@ -100,7 +100,7 @@ void launch_APs(struct stivale2_struct_tag_smp* smp_infos){
             continue;
         }
         LOG_ERR("Launching AP. Id {d}", smp_infos->smp_info[i].lapic_id);
-        smp_infos->smp_info[i].target_stack = physical_to_stivale(get_frame()) + 4096-64;
+        smp_infos->smp_info[i].target_stack = (uint64_t)physical_to_stivale(get_frame()) + 4096-64;
         smp_infos->smp_info[i].goto_address = (uint64_t)_start_core;
     }
     RELEASE_LOCK(LOCK_NAME(Bootstrap));

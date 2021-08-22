@@ -28,7 +28,10 @@ context_save* get_context(){
 void switch_task_mapped(task* to_enable){
     LOG_INFO("Enabling task at {x}", (uintptr_t)to_enable);
     context_save* save_frame = get_context();
-    // should save current context
+
+    UNUSED_VAR(save_frame);
+
+    // WARN TODO : should save current context
     ACTIVE_MAPPING(to_enable->page_directory);
     TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
 }

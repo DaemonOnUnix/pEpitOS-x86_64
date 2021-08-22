@@ -54,6 +54,9 @@ void k_invalid_opcode(volatile stackframe* regs){
     panic_common_stub(regs);
 }
 void timer(volatile stackframe* regs){
+    
+    UNUSED_VAR(regs);
+    
     save_simd_context(CONTEXT_FRAME_ADDR);
     LOG_INFO("timer plouf");
 }
