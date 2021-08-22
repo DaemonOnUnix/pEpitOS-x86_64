@@ -1,6 +1,6 @@
 #include "freestanding.h"
 
-bool strcmp(char* str1, char*str2){
+bool strcmp(volatile char* str1, volatile char* str2){
     for(;*str1 && *str2 && *str1 == *str2; str1++,str2++ );
     if(*str1 == *str2)
         return 0;

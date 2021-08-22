@@ -7,9 +7,9 @@ typedef struct {
     mapping_t page_directory;
 } task;
 
-void switch_task_stackframe(stackframe* regs, stackframe* to_inject);
+void switch_task_stackframe(volatile stackframe* regs, volatile stackframe* to_inject);
 void switch_task_mapped();
-void switch_task_from_interrupt(stackframe* regs);
+void switch_task_from_interrupt(volatile stackframe* regs);
 void enable_preemption();
 void disable_preemption();
 task create_task();

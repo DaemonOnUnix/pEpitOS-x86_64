@@ -4,9 +4,9 @@
 char* dec(unsigned long long x, char *s);
 char* decX(unsigned long long x, char *s);
 
-void* memset(void* b, int c, size_t len);
-void* memcpy(void* dest, const void* src, size_t n);
+void* memset(volatile void* b, int c, size_t len);
+void* memcpy(volatile void* dest, volatile const void* src, size_t n);
 
-bool strcmp(char* str1, char*str2);
+bool strcmp(volatile char* str1, volatile char* str2);
 
 #endif

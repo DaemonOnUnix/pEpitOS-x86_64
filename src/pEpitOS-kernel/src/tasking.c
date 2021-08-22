@@ -12,7 +12,7 @@ void enable_tasking(){
     attach_isr(SWITCH_TASK_INTERRUPT, switch_task_from_interrupt);
 }
 
-void switch_task_stackframe(stackframe* regs, stackframe* to_inject){
+void switch_task_stackframe(volatile stackframe* regs, volatile stackframe* to_inject){
     LOG_INFO("Injecting registers...");
     LOG_INFO("RIP before : {x}, after : {x}", regs->rip, to_inject->rip);
     // log_stackframe(regs);
@@ -33,14 +33,14 @@ void switch_task_mapped(task* to_enable){
     TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
 }
 
-void switch_regs_from_interrupt(stackframe* regs){
+void switch_regs_from_interrupt(volatile stackframe* regs){
     context_save* save_frame = get_context();
     // save_frame->stack_save = *regs;
     LOG_INFO("Switching task... context frame at {x}", save_frame);
     switch_task_stackframe(regs, &(save_frame->stack_save));
 }
 
-void switch_task_from_interrupt(stackframe* regs){
+void switch_task_from_interrupt(volatile stackframe* regs){
     task* to_enable = target_tasks[COREID];
     ASSERT(to_enable, "Switching task from interrupt...",
         "Invalid NULL task targeted...");
@@ -84,7 +84,7 @@ void register_this_context(){
 }
 
 void modify_target_task(uint8_t core_id, task* target_task){
-    target_tasks[COREID] = target_task;
+    target_tasks[core_id] = target_task;
 }
 
 task create_task_from_func(uintptr_t func_ptr,

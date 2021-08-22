@@ -142,6 +142,6 @@ void send_interrupt_to_core(uint8_t core_number, uint8_t interrupt_number){
     //to_send.bitfield.INIt_level = 1;
     to_send.bitfield.destination_type = 2;
     cpuWriteLAPIC(0x300, to_send.value);
-    volatile interrupt_message* result = LAPIC_VIRTUAL_ADDRESS + 0x300;
+    volatile interrupt_message* result = (void*)(LAPIC_VIRTUAL_ADDRESS + 0x300);
     while(result->delivery_status);
 }
