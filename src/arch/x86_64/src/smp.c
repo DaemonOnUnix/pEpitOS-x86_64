@@ -71,11 +71,12 @@ void _start_core(struct stivale2_smp_info* smp_info){
     LOG_OK("Page directory created and loaded successfully.");
 
     // parse_RSDT();
+    map_pics();
     enable_APIC();
-    smp_status = 1;
-
+    init_APIC_interrupt();
     init_APIC_timer();
 
+    smp_status = 1;
     smp_info = physical_to_stivale(smp_info);
     
     booted_cpus_count++;

@@ -6,9 +6,9 @@
 #include "utils/macros.h"
 #include "vmm/vmm.h"
 #include "intel/asm.h"
-
 static uintptr_t LAPIC_VIRTUAL_ADDRESS = 0;
 static uintptr_t IOAPIC_VIRTUAL_ADDRESS = 0;
+
 
 
 extern apic_info_t apic_info;
@@ -84,8 +84,8 @@ void redirect_interrupts(){
     }
 }
 
-void enable_APIC(){
-
+void map_APIC(){
+    ONCE();
     IOAPIC_VIRTUAL_ADDRESS = (uintptr_t)map_physical(apic_info.ioapic.address, IOAPIC_LENGTH*2);
     LAPIC_VIRTUAL_ADDRESS =  (uintptr_t)map_physical(apic_info.lapic_address, LAPIC_LENGTH*2);
     LOG_INFO("IOAPIC mapped at address: {x} | LAPIC mapped at address: {x}", IOAPIC_VIRTUAL_ADDRESS, LAPIC_VIRTUAL_ADDRESS);
@@ -96,6 +96,10 @@ void enable_APIC(){
     LOG_INFO("I/O APIC Version: {x}, Maximum redirection is: {x}", SHIFTR(info, 8, 0), SHIFTR(info, 8, 16));
     LOG_INFO("APIC version: {x}",cpuReadLAPIC(0x30));
     LOG_INFO("Setting the spurious interrupt vector register");
+}
+
+void enable_APIC(){
+    map_APIC();
     cpuWriteLAPIC(SPURIOUS_VECTOR_REGISTER, cpuReadLAPIC(SPURIOUS_VECTOR_REGISTER) | SPURIOUS_ALL);
     redirect_interrupts();
 }
@@ -140,7 +144,7 @@ void send_interrupt_to_core(uint8_t core_number, uint8_t interrupt_number){
     int_message to_send;
     to_send.bitfield.vector_number = interrupt_number;
     //to_send.bitfield.INIt_level = 1;
-    to_send.bitfield.destination_type = 2;
+    // to_send.bitfield.destination_type = 2;
     cpuWriteLAPIC(0x300, to_send.value);
     volatile interrupt_message* result = (void*)(LAPIC_VIRTUAL_ADDRESS + 0x300);
     while(result->delivery_status);
