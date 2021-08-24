@@ -141,8 +141,8 @@ void bootstrap_arch(void* structure){
     // asm volatile("sti");
     // asm volatile("int 0x7F");
     // asm volatile("cli");
-    send_interrupt_to_core(1, 32);
-    enable_tasking();
+    // send_interrupt_to_core(1, 32);
+    // enable_tasking();
 
     //TESTS
     /*
