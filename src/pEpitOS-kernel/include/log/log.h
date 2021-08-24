@@ -4,6 +4,7 @@
 #include "freestanding.h"
 #include "arch/arch.h"
 #include "multicore/lock.h"
+#include "multicore/common_locks.h"
 
 #define roprint(x) write_string(x)
 
@@ -38,7 +39,7 @@ CREATE_PROTOS(print);
 #define LOG_INFO(...)  {get_lock_print(); roprint(INFO_STRING);  if(is_multicore()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
 #define LOG_PANIC(...) {get_lock_print(); roprint(PANIC_STRING); if(is_multicore()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s} : {s} l. {d} -> " COL_DEFAULT, __FILE__, __func__, __LINE__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
 
-#define ASSERT(C, __TRUE, __FALSE, ...) {if(C){ LOG_OK(__TRUE, ##__VA_ARGS__); } else { LOG_PANIC(__FALSE, ##__VA_ARGS__); halt();}}
+#define ASSERT(C, __TRUE, __FALSE, ...) {if(C){ LOG_OK(__TRUE, ##__VA_ARGS__); } else { LOG_PANIC(__FALSE, ##__VA_ARGS__); disable_ints(); halt();}}
 #define CHECK(C, __TRUE, __FALSE, ...) {if(C){ LOG_OK(__TRUE, ##__VA_ARGS__); } else { LOG_ERR(__FALSE, ##__VA_ARGS__);}}
 
 #endif
