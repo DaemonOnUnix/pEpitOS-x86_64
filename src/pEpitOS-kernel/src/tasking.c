@@ -1,3 +1,4 @@
+#if 0
 #include "tasking/tasking.h"
 #include "log/log.h"
 #include "interrupts/defined_interrupts.h"
@@ -5,16 +6,23 @@
 #include "vmm/vmm.h"
 #include "tables/idt.h"
 #include "SMP/SMP.h"
+#endif
+
+#include "tasking/tasking.h"
+#include "arch/arch.h"
+#include "log/log.h"
+#include "vmm/vmm.h"
+#define ACTIVE_MAPPING(...) enable_mapping(__VA_ARGS__)
 
 task* target_tasks[32] = {0};
 
 void enable_tasking(){
-    attach_isr(SWITCH_TASK_INTERRUPT, switch_task_from_interrupt);
+    register_custom_int(arch_SWITCH_TASK_INT, switch_task_from_interrupt);
 }
 
 void switch_task_stackframe(volatile stackframe* regs, volatile stackframe* to_inject){
     LOG_INFO("Injecting registers...");
-    LOG_INFO("RIP before : {x}, after : {x}", regs->rip, to_inject->rip);
+    LOG_INFO("IP before : {x}, after : {x}", regs->rip, to_inject->rip);
     // log_stackframe(regs);
     *regs = *to_inject;
     // log_stackframe(regs);
@@ -33,7 +41,8 @@ void switch_task_mapped(task* to_enable){
 
     // WARN TODO : should save current context
     ACTIVE_MAPPING(to_enable->page_directory);
-    TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
+    // TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
+    trigger_int(arch_SWITCH_TASK_INT);
 }
 
 void switch_regs_from_interrupt(volatile stackframe* regs){
