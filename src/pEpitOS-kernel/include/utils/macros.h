@@ -24,19 +24,21 @@
 // Maybe section
 //
 #define sizeof_maybe(T) (sizeof(struct PACKED { char some; T val; }))
-#define Maybe(T) char*
+#define Maybe(T) volatile char*
 #define Some(T, V) ({\
-  char v[sizeof_maybe(T)];\
-  *(T*)(v + 1) = V;\
+  static volatile char v[sizeof_maybe(T)];\
+  *(volatile T*)(v + 1) = V;\
   v[0] = 1;\
   v;\
 })
 #define None(T) ({\
-  char v[sizeof_maybe(T)];\
+  static volatile char v[sizeof_maybe(T)];\
   v[0] = 0;\
   v;\
 })
-#define GET_STATUS(V) (V)[0]
-#define GET_VALUE(T, V) ((T)(*(V + 1)))
+#define MAYBE_IF(COND, T, V) if(COND) {return Some(T, V);} return None(T);
+#define GET_STATUS(V) ((V)[0])
+#define GET_VALUE(T, V) (*((T*)((V + 1))))
+#define UNWRAP(T, V) ({Maybe(T) ___val = V; if(!GET_STATUS(___val)) PANIC("Unwrap failed.");  GET_VALUE(T, ___val);})
 
 #endif
