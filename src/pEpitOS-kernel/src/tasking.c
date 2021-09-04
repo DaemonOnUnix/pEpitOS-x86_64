@@ -12,6 +12,7 @@
 #include "arch/arch.h"
 #include "log/log.h"
 #include "vmm/vmm.h"
+#include "multicore/interrupt_lock.h"
 #define ACTIVE_MAPPING(...) enable_mapping(__VA_ARGS__)
 
 task* target_tasks[32] = {0};
@@ -26,7 +27,6 @@ void switch_task_stackframe(volatile stackframe* regs, volatile stackframe* to_i
     // log_stackframe(regs);
     *regs = *to_inject;
     // log_stackframe(regs);
-
 }
 
 context_save* get_context(){
@@ -39,8 +39,8 @@ void switch_task_mapped(task* to_enable){
 
     UNUSED_VAR(save_frame);
 
-    // WARN TODO : should save current context
-    ACTIVE_MAPPING(to_enable->page_directory);
+    // TODO : should save current context
+    enable_mapping(to_enable->page_directory);
     // TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
     trigger_int(arch_SWITCH_TASK_INT);
 }
@@ -58,7 +58,7 @@ void switch_task_from_interrupt(volatile stackframe* regs){
         "Invalid NULL task targeted...");
     context_save* save_frame = get_context();
     save_frame->stack_save = *regs;
-    ACTIVE_MAPPING(to_enable->page_directory);
+    enable_mapping(to_enable->page_directory);
     switch_regs_from_interrupt(regs);
 }
 
@@ -69,21 +69,20 @@ void enable_preemption(){
 
 void disable_preemption(){
     LOG_INFO("Disabling preemption");
-    asm volatile("cli");
+    disable_ints();
 }
 
 task create_task(){
     disable_preemption();
-    uint64_t current_page_directory;
-    asm volatile("mov %0, cr3": "=a"(current_page_directory):);
+    mapping_t current_page_directory = get_current_mapping();
     task to_return = (task){
         .page_directory = create_page_directory()
     };
-    asm volatile("mov cr3, %0" :: "a"(to_return.page_directory));
+    enable_mapping(to_return.page_directory);
     initialize_mapping();
-    LOG_INFO("PICs mapped in new task.");
+    LOG_INFO("Mapping initialized.");
     setup_context_frame();
-    asm volatile("mov cr3, %0" :: "a"(current_page_directory));
+    enable_mapping(current_page_directory);
     enable_preemption();
     LOG_OK("Task created successfully");
     return to_return;
@@ -102,27 +101,31 @@ void modify_target_task(uint8_t core_id, task* target_task){
 task create_task_from_func(uintptr_t func_ptr,
     uintptr_t stack_size, uintptr_t stack_virtual_addr, bool is_userspace, 
     uint16_t cs, uint16_t ss, uint64_t rflags){
-    disable_preemption();
-    uint64_t current_page_directory;
-    asm volatile("mov %0, cr3": "=a"(current_page_directory):);
+    lock_ints();
+    // disable_preemption();
+    mapping_t current_page_directory = get_current_mapping();
     task to_return = (task){
         .page_directory = create_page_directory()
     };
-    asm volatile("mov cr3, %0" :: "a"(to_return.page_directory));
-    map_pics();
-    LOG_INFO("PICs mapped in new task.");
+    enable_mapping(to_return.page_directory);
+    initialize_mapping();
+    LOG_INFO("Mapping initialized.");
     setup_context_frame();
     kmmap(stack_virtual_addr & CLEAN_BITS_MASK, (stack_size & CLEAN_BITS_MASK) + ARCH_PAGE_SIZE, 3 & (is_userspace ? 4 : 0));
     LOG_INFO("Creating task with func_ptr = {x}", func_ptr);
-    get_context()->stack_save.rip = func_ptr;
+    get_context()->stack_save.ip = func_ptr;
     // get_context()->stack_save.useresp = 0xdeadb000 + 64 * 4;//(stack_virtual_addr + stack_size) & CLEAN_BITS_MASK ;
-    get_context()->stack_save.useresp = stack_virtual_addr + stack_size;//(stack_virtual_addr + stack_size) & CLEAN_BITS_MASK ;
-    get_context()->stack_save.rflags = rflags;
-    get_context()->stack_save.cs = cs;
-    get_context()->stack_save.ss = ss;
+    get_context()->stack_save.ret_sp = stack_virtual_addr + stack_size;//(stack_virtual_addr + stack_size) & CLEAN_BITS_MASK ;
+#   ifdef X86_64
+        get_context()->stack_save.rflags = rflags;
+        get_context()->stack_save.cs = cs;
+        get_context()->stack_save.ss = ss;
+#   endif
     //get_context()->stack_save.rsp = stack_virtual_addr + stack_size & CLEAN_BITS_MASK + ARCH_PAGE_SIZE - 8;
-    asm volatile("mov cr3, %0" :: "a"(current_page_directory));
-    enable_preemption();
+    // asm volatile("mov cr3, %0" :: "a"(current_page_directory));
+    enable_mapping(current_page_directory);
+    // enable_preemption();
+    unlock_ints();
     LOG_OK("Task created successfully");
     return to_return;
 }
