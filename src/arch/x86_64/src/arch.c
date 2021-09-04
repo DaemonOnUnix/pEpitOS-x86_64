@@ -33,6 +33,13 @@ void enable_mapping(mapping_t mapping){
     asm volatile("mov cr3, %0" :: "a"(mapping));
 }
 
+mapping_t get_current_mapping(){
+    uint64_t to_return;
+    asm volatile("mov %0, cr3" : "=a"(to_return) :);
+    return (mapping_t)to_return;
+}
+
+
 void bootstrap_arch(void* structure){
 
     struct stivale2_struct* stivale2_struct = (struct stivale2_struct*)structure;
@@ -141,7 +148,7 @@ void bootstrap_arch(void* structure){
     // asm volatile("sti");
     // asm volatile("int 0x7F");
     // asm volatile("cli");
-    // send_interrupt_to_core(1, 32);
+    send_interrupt_to_core(1, 32);
     // enable_tasking();
 
     //TESTS

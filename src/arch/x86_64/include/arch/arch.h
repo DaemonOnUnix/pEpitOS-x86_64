@@ -34,6 +34,13 @@ typedef uint64_t mapping_t;
 void enable_mapping(mapping_t);
 
 /**
+ * @brief Get the current mapping, such as top page level in case of paging
+ * 
+ * @return mapping_t The interface object describing the mapping, a.d. in arch.h
+ */
+mapping_t get_current_mapping();
+
+/**
  * @brief Function to be called each time a virtual memory mapping
  * will be created
  */
