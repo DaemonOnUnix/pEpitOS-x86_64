@@ -16,6 +16,7 @@
 #include "SMP/SMP.h"
 #include "UEFI/APIC.h"
 #include "tables/idt.h"
+#include "pmm/pmm.h"
 
 #define STRINGIFY(...) #__VA_ARGS__
 
@@ -45,6 +46,11 @@ mapping_t get_current_mapping();
  * will be created
  */
 #define initialize_mapping() map_pics()
+
+/**
+ * @brief Gets the first valid address according to arch setup.
+ */
+#define GET_FIRST_VALID_ADDRESS() (1ull<<40)
 
 //
 // Interrupts interface section
@@ -184,5 +190,14 @@ void halt();
  * @brief Interrupt number for a manual task switch
  */
 #define arch_SWITCH_TASK_INT 129
+
+//
+// Physical memory section
+//
+
+/**
+ * @brief Requests a page to pmm
+ */
+#define new_physical_page() get_frame()
 
 #endif

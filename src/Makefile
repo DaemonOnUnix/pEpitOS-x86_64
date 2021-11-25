@@ -6,7 +6,7 @@ ARCH_FOLDER = arch
 KERNEL_DIR = pEpitOS-kernel
 
 CC = gcc-9
-CFLAGS = -Wall -Wextra -O3 -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ -g
+CFLAGS = -Wall -Wextra -O3 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ -g
 
 ASMPARAM = -f elf64 -F dwarf
 
@@ -17,7 +17,7 @@ LOGO = $(ASSETS)/pEpitOS-logo-1.bmp
 
 ISO_FILES = $(KERNEL).elf limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin $(LOGO)
 
-CORE_NUM = 2
+CORE_NUM = 4
 
 LINK_SCRIPT = $(ARCH_FOLDER)/$(ARCH)/link.ld
 

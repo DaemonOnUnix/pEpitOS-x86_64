@@ -21,8 +21,8 @@ load_idt:
     lidt [rdi]
     ret
 
-%macro ISR_NOERRCODE 1  ; define a macro, taking one parameter
-    [GLOBAL isr%1]        ; %1 accesses the first parameter.
+%macro ISR_NOERRCODE 1
+    [GLOBAL isr%1]
     isr%1:
         push QWORD 128
         push QWORD %1

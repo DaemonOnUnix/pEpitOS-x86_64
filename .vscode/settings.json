@@ -5,6 +5,8 @@
         "pmm.h": "c",
         "vmm.h": "c",
         "stdatomic.h": "c",
-        "locks.h": "c"
+        "locks.h": "c",
+        "scheduler.C": "cpp",
+        "arch.h": "c"
     }
 }

@@ -7,16 +7,15 @@
 void kernel_main(void* generic_structure) {
     
     bootstrap_arch(generic_structure);
-
-    launch_tests();
-
+    
     lock_ints();
-    lock_ints();
-    unlock_ints();
 
+    // unlock_ints();
 #   ifdef X86_64
     LOG_OK("x86_64 bootstrap finished !");
 #   endif
+    
+    //launch_tests();
     
     LOG_OK("All work finished.");
     

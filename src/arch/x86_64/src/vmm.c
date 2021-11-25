@@ -178,7 +178,11 @@ void setup_context_frame(){
 
     LOG_INFO("Current task currently supporting context frame.")
 
-    asm volatile("push rax; mov rax, cr4; or rax, (1<<9); mov cr4, rax; pop rax");
+    asm volatile(
+        " \
+            push rax; mov rax, cr4; or rax, (1<<9); mov cr4, rax; pop rax \
+        "
+    );
 
     LOG_OK("Context frame successfully setup at address {x}", context_save_addr);
     LOG_OK("Passing");
@@ -334,6 +338,78 @@ void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t
         }
         offset_l3 = 0;
     }
+}
 
+uint64_t search_available(uintptr_t base_addr, size_t size){
+    uint64_t* entry = 0;
+    address_64_bits address = {.address=base_addr};
+    size_t page_num = size / ARCH_PAGE_SIZE;
+    size_t space_left = size % ARCH_PAGE_SIZE;
+    if(space_left)
+        page_num++;
 
+    size_t temp_page_num = page_num;
+    address_64_bits beginning_address = address;
+
+    for (; address.offset.plm4 < ARCH_N_ENTRY; address.offset.plm4++){
+        entry = (void*)(craft_addr(0, 0, 0, 0, address.offset.plm4 * 8));
+        if (*entry == 0)
+            return address.address;
+
+        for (; address.offset.plm3 < ARCH_N_ENTRY; address.offset.plm3++){
+            entry = (void*)(craft_addr(0, 0, 0, address.offset.plm4, address.offset.plm3 * 8));
+            if (*entry == 0)
+                return address.address;
+
+            for (; address.offset.plm2 < ARCH_N_ENTRY; address.offset.plm2++){
+                entry = (void*)craft_addr(0, 0, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
+                if (*entry == 0)
+                    return address.address;
+
+                for (; address.offset.plm1 < ARCH_N_ENTRY; address.offset.plm1++){
+                    entry = (void*)craft_addr(0, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
+                    if (*entry == 0)
+                    {
+                        if(temp_page_num == 0)
+                            return beginning_address.address;
+                        temp_page_num--;
+                    } else {
+                        temp_page_num = page_num;
+                        beginning_address = address;
+                    }
+                }
+                address.offset.plm1 = 0;
+            }
+            address.offset.plm2 = 0;
+        }
+        address.offset.plm3 = 0;
+    }
+    LOG_ERR("There is no free space after the address {x}", base_addr);
+    return 0;
+}
+
+#include <memory/vmmwrapper.h>
+
+/**
+ * @brief Mandatory interface function to get the granularity flags
+ *
+ * @param flags the generic flags to convert
+ * @return uintptr_t the converted flags, to be ored
+ */
+uintptr_t convert_to_arch_flags(uintptr_t flags)
+{
+    uintptr_t to_return = 0;
+    if (flags & MAP_PRESENT)
+        to_return |= 1;
+    if (flags & MAP_WRITE)
+        to_return |= 2;
+    if (flags & MAP_USER)
+        to_return |= 4;
+    if (flags & MAP_COPY_ON_WRITE)
+        to_return |= (1 << 9);
+    if (flags & MAP_EXECUTE)
+        to_return |= (1 << 63);
+    if (flags & MAP_SWAPPED)
+        to_return |= (1 << 10);
+    return to_return;
 }
