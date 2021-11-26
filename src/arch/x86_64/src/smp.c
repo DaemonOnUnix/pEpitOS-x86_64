@@ -84,7 +84,7 @@ void _start_core(struct stivale2_smp_info* smp_info){
     
     booted_cpus_count++;
     
-    LOG_PANIC("Halting CPU {d}", COREID);
+    LOG_OK("Halting CPU {d}. Initialization successful.", COREID);
 
     END_BOTTLENECK(1);
 
