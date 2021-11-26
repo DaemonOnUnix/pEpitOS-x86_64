@@ -49,6 +49,9 @@ uint32_t get_core_id(){
 CREATE_LOCK(1)
 CREATE_LOCK(Bootstrap)
 
+typedef void (*launching_address)();
+launching_address *launching_addresses;
+
 void _start_core(struct stivale2_smp_info* smp_info){
     
     GRAB_LOCK(LOCK_NAME(Bootstrap));
@@ -87,13 +90,22 @@ void _start_core(struct stivale2_smp_info* smp_info){
 
     asm volatile("sti");
 
+    while(1)
+    {
+        launching_addresses[COREID] = NULL;
+        while(!launching_addresses[COREID] || launching_addresses[COREID] == (void*)1)
+            ;
+        launching_addresses[COREID]();
+    }
+
     HALT();
 
 }
 
-void launch_APs(struct stivale2_struct_tag_smp* smp_infos){
+void launch_APs(struct stivale2_struct_tag_smp* smp_infos, void (*_launching_addresses[])()){
     if(smp_infos->cpu_count)
         smp_status = 1;
+    launching_addresses = _launching_addresses;
     GRAB_LOCK(LOCK_NAME(Bootstrap));
     for(size_t i = 0; i < smp_infos->cpu_count;i++){
         if(smp_infos->bsp_lapic_id == smp_infos->smp_info[i].lapic_id){

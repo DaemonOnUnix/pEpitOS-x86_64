@@ -191,7 +191,6 @@ void setup_context_frame(){
     );
 
     LOG_OK("Context frame successfully setup at address {x}", context_save_addr);
-    LOG_OK("Passing");
 }
 
 
@@ -413,10 +412,10 @@ uintptr_t convert_to_arch_flags(uintptr_t flags)
     if (flags & MAP_USER)
         to_return |= 4;
     if (flags & MAP_COPY_ON_WRITE)
-        to_return |= (1 << 9);
+        to_return |= (1ull << 9);
     if (flags & MAP_EXECUTE)
-        to_return |= (1 << 63);
+        to_return |= (1ull << 63);
     if (flags & MAP_SWAPPED)
-        to_return |= (1 << 10);
+        to_return |= (1ull << 10);
     return to_return;
 }

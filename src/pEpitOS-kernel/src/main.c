@@ -1,4 +1,5 @@
 #include "arch/arch.h"
+#include "interface_struct/interface_struct.h"
 #include "log/log.h"
 #include "tests/tests.h"
 
@@ -6,7 +7,7 @@
 
 void kernel_main(void* generic_structure) {
     
-    bootstrap_arch(generic_structure);
+    interface_struct *interface = bootstrap_arch(generic_structure);
     
     lock_ints();
 
@@ -16,6 +17,7 @@ void kernel_main(void* generic_structure) {
 #   endif
     
     launch_tests();
+    interface->launching_addresses[1] = launch_tests;
     
     LOG_OK("All work finished.");
     

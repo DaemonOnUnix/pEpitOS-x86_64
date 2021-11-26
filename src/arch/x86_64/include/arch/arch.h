@@ -17,6 +17,7 @@
 #include "UEFI/APIC.h"
 #include "tables/idt.h"
 #include "pmm/pmm.h"
+#include "interface_struct/interface_struct.h"
 
 #define STRINGIFY(...) #__VA_ARGS__
 
@@ -160,7 +161,7 @@ typedef context_save context_save;
 /**
  * @brief First function to be called after passing hand to kernel
  */
-void bootstrap_arch(void*);
+interface_struct *bootstrap_arch(void*);
 
 
 ///

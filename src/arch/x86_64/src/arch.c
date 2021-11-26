@@ -16,6 +16,7 @@
 #include "UEFI/APIC.h"
 #include "tasking/tasking.h"
 #include "interrupts/defined_interrupts.h"
+#include "interface_struct/interface_struct.h"
 
 void enable_ints(){
     asm volatile("sti");
@@ -39,8 +40,9 @@ mapping_t get_current_mapping(){
     return (mapping_t)to_return;
 }
 
+static interface_struct interface = {0};
 
-void bootstrap_arch(void* structure){
+interface_struct *bootstrap_arch(void* structure){
 
     struct stivale2_struct* stivale2_struct = (struct stivale2_struct*)structure;
 
@@ -86,16 +88,6 @@ void bootstrap_arch(void* structure){
 
     asm volatile("mov cr3, %0"::"a"(create_page_directory()));
     LOG_OK("Page directory created and loaded successfully.");
-    // kmmap(craft_addr(21, 21, 21, 21, 21), 0xF, 2);
-    // char* a = (char*)craft_addr(21, 21, 21, 21, 21);
-    
-    // kmmap(0xffdeadbeef, 0xF, 2);
-    // char* a = (char*)0xffdeadbeef;
-    // kmunmap(0xffdeadb000, 0x1000, MEM_TO_UPPER);
-
-    // kmmap(0xffdeadbeef, 0xF, 2);
-    // a = (char*)0xffdeadbeef;
-    // kmunmap(0xffdeadb000, 0x1000, MEM_TO_UPPER);
 
     setup_context_frame();
     
@@ -110,57 +102,14 @@ void bootstrap_arch(void* structure){
 
     asm volatile("sti");
 
-    // ASSERT(smp_infos->cpu_count == 2, "CPU count is {d}, at addr {x}", "CPU count is {d}, at addr {x}", smp_infos->cpu_count, (uintptr_t)smp_infos);
-
-    launch_APs(smp_infos);
-
-    // while(1) asm volatile("hlt");
-
-    // a[0] = 5;
-
-    // for(;;){
-    //     uintptr_t got_frame = get_frame();
-    //     LOG_INFO("New frame at {x}", got_frame);
-
-    // }
-    
-    
-    // get_frame();
-    // get_frame();
-    // get_frame();
-
-    // LOG_ERR("Testing debug mode");
-    // asm volatile("int 127");
-    // volatile int b = 3 + 4;
-    // volatile int c = 3 * 4;
-    // asm volatile("int 127");
-    // LOG_ERR("Testing breakpoint.");
-
-    // asm volatile("int 3");
-    // LOG_OK("Returned from breakpoint.");
-
-    // asm volatile("jmp %0"::"a"(stivale2_struct));
+    launch_APs(smp_infos, interface.launching_addresses);
 
     while (get_booted_cpus_count() != smp_infos->cpu_count);
     LOG_OK("All CPUs booted successfully ! ({d} cores)", get_booted_cpus_count());
-    // asm volatile("int 0x7F");
-    // asm volatile("sti");
-    // asm volatile("int 0x7F");
-    // asm volatile("cli");
-    // send_interrupt_to_core(1, 32);
-    // enable_tasking();
 
-    //TESTS
-    /*
-    task _test = create_task();
-    task test = create_task_from_func(&alol, 0x2000, 0xdeadb000, false, 0x8, 0x10, 0);
-    asm volatile("cli");
-    modify_target_task(COREID, &test);
+    interface.core_number = smp_infos->cpu_count;
+    for(size_t i = 0; i < 32; i++)
+        interface.launching_addresses[i] = (void*)1;
+    return &interface;
 
-    asm volatile("mov %0, cr3" : "=a"(kernel.page_directory) :);
-
-    if(!has_switched)
-        TRIGGER_INTERRUPT(SWITCH_TASK_INTERRUPT);
-    */
-    //END TESTS
 }
