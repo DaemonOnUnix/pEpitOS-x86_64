@@ -162,6 +162,7 @@ uintptr_t create_page_directory() {
         new_pd[i] = limine_page_directory_addr[i];
     
     new_pd[RECURSIVE_MAPPING_ENTRY] = (uint64_t)new_pdp | 3;
+    new_pd[0] = 0;
     
     return (uintptr_t)new_pdp;
 }
@@ -341,6 +342,7 @@ void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t
 }
 
 uint64_t search_available(uintptr_t base_addr, size_t size){
+    LOG_INFO("Searching for {d} bytes at {x}", size, base_addr);
     uint64_t* entry = 0;
     address_64_bits address = {.address=base_addr};
     size_t page_num = size / ARCH_PAGE_SIZE;
