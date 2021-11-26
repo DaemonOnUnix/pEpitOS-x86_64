@@ -5,6 +5,11 @@
 #include "vmm/vmm.h"
 #include "intel/asm.h"
 
+#ifndef HPET_DEBUG
+#undef LOG_INFO
+#define LOG_INFO(...)
+#endif
+
 static uintptr_t hpet_register_address = 0;
 static size_t period = 0;
 

@@ -3,6 +3,11 @@
 #include "vmm/vmm.h"
 #include "UEFI/hpet.h"
 
+#ifndef RSDT_DEBUG
+#undef LOG_INFO
+#define LOG_INFO(...)
+#endif
+
 //static RSDPDescriptor20 RSDP_desc = {0};
 
 static RSDPDescriptor20* desc_rsdp_20 = 0;
