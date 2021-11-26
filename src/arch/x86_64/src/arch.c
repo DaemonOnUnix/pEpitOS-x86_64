@@ -99,7 +99,6 @@ void bootstrap_arch(void* structure){
 
     setup_context_frame();
     
-    LOG_OK("PASSED !!!!!!!!!!!!!!!!");
     extern void enable_sse(void);
     enable_sse();
     

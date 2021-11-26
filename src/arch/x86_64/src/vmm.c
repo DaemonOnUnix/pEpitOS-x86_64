@@ -32,26 +32,26 @@ void kmmap(uint64_t addr, size_t size, uint64_t flags){
     uint64_t* entry;
 
     for (; offset_l4 < ARCH_N_ENTRY; offset_l4++){
-        entry = (void*)(craft_addr(0, 0, 0, 0, offset_l4 * 8));
+        entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4 * 8));
         if (*entry == 0)
             *entry = get_frame() | flags | 1;
         
         for (; offset_l3 < ARCH_N_ENTRY; offset_l3++){
-            entry = (void*)(craft_addr(0, 0, 0, offset_l4, offset_l3 * 8));
+            entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3 * 8));
             LOG_INFO("Entry 1: {x}", *entry);
             if (*entry == 0)
                 *entry = get_frame() | flags | 1;
             LOG_INFO("Entry 1: {x}", *entry);
 
             for (; offset_l2 < ARCH_N_ENTRY; offset_l2++){
-                entry = (void*)craft_addr(0, 0, offset_l4, offset_l3, offset_l2 * 8);
+                entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3, offset_l2 * 8);
                 LOG_INFO("Entry 2: {x}", *entry);
                 if (*entry == 0)
                     *entry = get_frame() | flags | 1;
                 LOG_INFO("Entry 2: {x}", *entry);
                 
                 for (; offset_l1 < ARCH_N_ENTRY; offset_l1++){
-                    entry = (void*)craft_addr(0, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
+                    entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
                     uint64_t space_left = ARCH_PAGE_SIZE - (uint64_t)offset_l0;
                     if (*entry == 0){
                         *entry = get_frame() | flags | 1;
@@ -108,7 +108,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
 
                     if (offset_l0 == 0)
                     {
-                        entry = (void *)craft_addr(0, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
+                        entry = (void *)craft_addr(RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
                         free_frame((uintptr_t)(*entry));
                         *entry = 0;
 
@@ -122,7 +122,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
                     }
                     offset_l0 = 0;
                 }
-                entry = (void *)(craft_addr(0, 0, offset_l4, offset_l3, offset_l2 * 8));
+                entry = (void *)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3, offset_l2 * 8));
                 if (is_frame_empty((uint64_t *)(*entry)))
                 {
                     LOG_ERR("Freeing were performed on plm2");
@@ -131,7 +131,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
                 }
                 offset_l1 = 0;
             }
-            entry = (void *)(craft_addr(0, 0, 0, offset_l4, offset_l3 * 8));
+            entry = (void *)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3 * 8));
             if (is_frame_empty((uint64_t *)(*entry)))
             {
                 LOG_ERR("Freeing were performed on plm3");
@@ -142,7 +142,7 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
             offset_l2 = 0;
         }
         offset_l3 = 0;
-        entry = (void *)(craft_addr(0, 0, 0, 0, offset_l4 * 8));
+        entry = (void *)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4 * 8));
         if (is_frame_empty((uint64_t *)(*entry)))
         {
             LOG_ERR("Freeing were performed on plm4");
@@ -161,7 +161,7 @@ uintptr_t create_page_directory() {
     for(uint32_t i = 0; i < 512; i++)
         new_pd[i] = limine_page_directory_addr[i];
     
-    new_pd[0] = (uint64_t)new_pdp | 3;
+    new_pd[RECURSIVE_MAPPING_ENTRY] = (uint64_t)new_pdp | 3;
     
     return (uintptr_t)new_pdp;
 }
@@ -199,7 +199,7 @@ size_t get_size(uintptr_t base_addr, size_t stop_value){
     
     size_t size = 0;
     for (; address.offset.plm4 < ARCH_N_ENTRY; address.offset.plm4++){
-        entry = (void*)(craft_addr(0, 0, 0, 0, address.offset.plm4 * 8));
+        entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4 * 8));
         if (*entry == 0){
             if((size += (1ull<<39)) >= stop_value)
                 return size;
@@ -207,7 +207,7 @@ size_t get_size(uintptr_t base_addr, size_t stop_value){
         }
    
         for (; address.offset.plm3 < ARCH_N_ENTRY; address.offset.plm3++){
-            entry = (void*)(craft_addr(0, 0, 0, address.offset.plm4, address.offset.plm3 * 8));
+            entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3 * 8));
             if (*entry == 0){
                 if((size += (1ull << 30)) >= stop_value)
                     return size;
@@ -215,7 +215,7 @@ size_t get_size(uintptr_t base_addr, size_t stop_value){
             }
 
             for (; address.offset.plm2 < ARCH_N_ENTRY; address.offset.plm2++){
-                entry = (void*)craft_addr(0, 0, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
+                entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
                 if (*entry == 0){
                     if((size += (1ull << 21)) >= stop_value)
                         return size;
@@ -223,7 +223,7 @@ size_t get_size(uintptr_t base_addr, size_t stop_value){
                 }
                 
                 for (; address.offset.plm1 < ARCH_N_ENTRY; address.offset.plm1++){
-                    entry = (void*)craft_addr(0, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
+                    entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
                     
                     if (*entry == 0){
                         size += (1ull << 12);
@@ -251,22 +251,22 @@ uint64_t search_empty_space(uintptr_t base_addr){
     address_64_bits address = {.address=base_addr};
     
     for (; address.offset.plm4 < ARCH_N_ENTRY; address.offset.plm4++){
-        entry = (void*)(craft_addr(0, 0, 0, 0, address.offset.plm4 * 8));
+        entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4 * 8));
         if (*entry == 0)
             return address.address;
         
         for (; address.offset.plm3 < ARCH_N_ENTRY; address.offset.plm3++){
-            entry = (void*)(craft_addr(0, 0, 0, address.offset.plm4, address.offset.plm3 * 8));
+            entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3 * 8));
             if (*entry == 0)
                 return address.address;
 
             for (; address.offset.plm2 < ARCH_N_ENTRY; address.offset.plm2++){
-                entry = (void*)craft_addr(0, 0, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
+                entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
                 if (*entry == 0)
                     return address.address;
                 
                 for (; address.offset.plm1 < ARCH_N_ENTRY; address.offset.plm1++){
-                    entry = (void*)craft_addr(0, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
+                    entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
                     if (*entry == 0)
                         return address.address;
                 }
@@ -303,22 +303,22 @@ void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t
     uint64_t* entry;
 
     for (; offset_l4 < ARCH_N_ENTRY; offset_l4++){
-        entry = (void*)(craft_addr(0, 0, 0, 0, offset_l4 * 8));
+        entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4 * 8));
         if (*entry == 0)
             *entry = get_frame() | flags | 1;
         
         for (; offset_l3 < ARCH_N_ENTRY; offset_l3++){
-            entry = (void*)(craft_addr(0, 0, 0, offset_l4, offset_l3 * 8));
+            entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3 * 8));
             if (*entry == 0)
                 *entry = get_frame() | flags | 1;
 
             for (; offset_l2 < ARCH_N_ENTRY; offset_l2++){
-                entry = (void*)craft_addr(0, 0, offset_l4, offset_l3, offset_l2 * 8);
+                entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3, offset_l2 * 8);
                 if (*entry == 0)
                     *entry = get_frame() | flags | 1;
                 
                 for (; offset_l1 < ARCH_N_ENTRY; offset_l1++){
-                    entry = (void*)craft_addr(0, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
+                    entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, offset_l4, offset_l3, offset_l2, offset_l1 * 8);
                     uint64_t space_left = ARCH_PAGE_SIZE - (uint64_t)offset_l0;
                     if (*entry != 0){
                         // LOG_ERR("Physical page {x} at logical address {x} will be replace", *entry, entry);
@@ -352,22 +352,22 @@ uint64_t search_available(uintptr_t base_addr, size_t size){
     address_64_bits beginning_address = address;
 
     for (; address.offset.plm4 < ARCH_N_ENTRY; address.offset.plm4++){
-        entry = (void*)(craft_addr(0, 0, 0, 0, address.offset.plm4 * 8));
+        entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4 * 8));
         if (*entry == 0)
             return address.address;
 
         for (; address.offset.plm3 < ARCH_N_ENTRY; address.offset.plm3++){
-            entry = (void*)(craft_addr(0, 0, 0, address.offset.plm4, address.offset.plm3 * 8));
+            entry = (void*)(craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3 * 8));
             if (*entry == 0)
                 return address.address;
 
             for (; address.offset.plm2 < ARCH_N_ENTRY; address.offset.plm2++){
-                entry = (void*)craft_addr(0, 0, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
+                entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3, address.offset.plm2 * 8);
                 if (*entry == 0)
                     return address.address;
 
                 for (; address.offset.plm1 < ARCH_N_ENTRY; address.offset.plm1++){
-                    entry = (void*)craft_addr(0, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
+                    entry = (void*)craft_addr(RECURSIVE_MAPPING_ENTRY, address.offset.plm4, address.offset.plm3, address.offset.plm2, address.offset.plm1 * 8);
                     if (*entry == 0)
                     {
                         if(temp_page_num == 0)
