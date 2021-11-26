@@ -2,6 +2,11 @@
 #include "log/log.h"
 #include "vmm/vmm.h"
 
+#ifndef PMM_DEBUG
+#undef LOG_INFO
+#define LOG_INFO(...)
+#endif
+
 typedef struct {
     uint64_t aligned_base;
     uint64_t length;

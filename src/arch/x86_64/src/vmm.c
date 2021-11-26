@@ -3,6 +3,11 @@
 #include "log/log.h"
 #include "interrupts/stackframe.h"
 
+#ifndef VMM_DEBUG
+#undef LOG_INFO
+#define LOG_INFO(...)
+#endif
+
 static uint64_t* limine_page_directory_addr = 0;
 
 void init_vmm(){

@@ -2,6 +2,11 @@
 #include "freestanding.h"
 #include "log/log.h"
 
+#ifndef GDT_DEBUG
+#undef LOG_INFO
+#define LOG_INFO(...)
+#endif
+
 #define nGDT_ENTRIES 3
 
 #define GDT_SEGMENT (0b00010000)

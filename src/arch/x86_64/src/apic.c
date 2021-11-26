@@ -9,7 +9,12 @@
 static uintptr_t LAPIC_VIRTUAL_ADDRESS = 0;
 static uintptr_t IOAPIC_VIRTUAL_ADDRESS = 0;
 
-
+#ifndef APIC_DEBUG
+#undef LOG_OK
+#define LOG_OK(...)
+#undef LOG_INFO
+#define LOG_INFO(...)
+#endif
 
 extern apic_info_t apic_info;
 

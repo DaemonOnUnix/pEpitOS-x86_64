@@ -5,6 +5,11 @@
 #include "UEFI/APIC.h"
 #define nIDT_ENTRY 256
 
+#ifndef IDT_DEBUG
+#undef LOG_INFO
+#define LOG_INFO(...)
+#endif
+
 typedef struct {
     uint16_t size;
     uintptr_t offset;

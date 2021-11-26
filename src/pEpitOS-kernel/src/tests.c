@@ -31,6 +31,8 @@ void launch_free_tests(){
 void launch_tests(){
     TEST_LAUNCH(malloc);
     TEST_LAUNCH(free);
+    TEST_LAUNCH(malloc);
+    TEST_LAUNCH(free);
 }
 
 #else
