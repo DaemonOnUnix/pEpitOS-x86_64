@@ -15,7 +15,7 @@ void kernel_main(void* generic_structure) {
     LOG_OK("x86_64 bootstrap finished !");
 #   endif
     
-    //launch_tests();
+    launch_tests();
     
     LOG_OK("All work finished.");
     

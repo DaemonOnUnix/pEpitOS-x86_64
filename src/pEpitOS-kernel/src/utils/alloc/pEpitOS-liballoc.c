@@ -1,13 +1,14 @@
 
 #include "multicore/lock.h"
 #include "arch/arch.h"
+#include "memory/vmmwrapper.h"
 
 CREATE_LOCK(lock_alloc);
 CREATE_PROTOS(lock_alloc);
 
 extern int liballoc_lock()
 {
-    WAIT_LOCK(LOCK_NAME(lock_alloc));
+    //WAIT_LOCK(LOCK_NAME(lock_alloc));
     GRAB_LOCK(LOCK_NAME(lock_alloc));
     return 0;
 }
@@ -19,10 +20,12 @@ extern int liballoc_unlock()
 }
 extern void* liballoc_alloc(int n)
 {
-
-    return 0;
+    void *ptr = space_alloc(n, MAP_PRESENT | MAP_WRITE);
+    return ptr;
 }
+
 extern int liballoc_free(void* p, int n)
 {
+    space_free(p, n);
     return 0;
 }

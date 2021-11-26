@@ -15,5 +15,6 @@ enum map_flags {
 };
 
 uintptr_t space_alloc(size_t size, uintptr_t flags);
+void space_free(uintptr_t addr, size_t size);
 
 #endif

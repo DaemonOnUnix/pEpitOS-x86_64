@@ -12,7 +12,6 @@ LOG_ERR("------------ " #id " tests finished ------------");\
 #include "alloc/alloc.h"
 
 void launch_lock_tests(){
-
 }
 
 void launch_malloc_tests(){
