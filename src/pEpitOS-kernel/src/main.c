@@ -5,6 +5,11 @@
 
 #include "multicore/interrupt_lock.h"
 
+// void hello()
+// {
+//     LOG_OK("Hello");
+// }
+
 void kernel_main(void* generic_structure) {
     
     interface_struct *interface = bootstrap_arch(generic_structure);
@@ -16,8 +21,11 @@ void kernel_main(void* generic_structure) {
     LOG_OK("x86_64 bootstrap finished !");
 #   endif
     
-    launch_tests();
-    interface->launching_addresses[1] = launch_tests;
+    // launch_tests();
+    // interface->launching_addresses[1] = hello;
+    // interface->launching_addresses[2] = hello;
+    // interface->launching_addresses[3] = hello;
+    // interface->launching_addresses[4] = hello;
     
     LOG_OK("All work finished.");
     
