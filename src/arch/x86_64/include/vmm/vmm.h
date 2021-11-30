@@ -48,4 +48,5 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction);
 void setup_context_frame();
 void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t flags);
 void* map_physical(uint64_t physical_addr, size_t size);
+uint64_t search_available(uintptr_t base_addr, size_t size);
 #endif

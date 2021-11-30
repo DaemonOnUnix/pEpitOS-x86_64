@@ -20,7 +20,7 @@ extern int liballoc_unlock()
 }
 extern void* liballoc_alloc(int n)
 {
-    void *ptr = space_alloc(n, MAP_PRESENT | MAP_WRITE);
+    void *ptr = (void*)space_alloc(n, MAP_PRESENT | MAP_WRITE);
     return ptr;
 }
 

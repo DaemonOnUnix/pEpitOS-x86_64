@@ -149,7 +149,9 @@ void set_memory_map(struct stivale2_struct_tag_memmap * memmap_tag){
     for(size_t i = 0; i < entry_number; i++){
         struct stivale2_mmap_entry x = memmap[i];
         if(x.type & 1 && !(x.type ^ 1))
+        {
             LOG_INFO("Entry {d} := Base : {x}, Length : {d}, Type : {x}, Unused : {d}", i, x.base, x.length, x.type, x.unused);
+        }
     }
     LOG_OK("Memory map dump done.");
 }

@@ -87,11 +87,19 @@ static struct stivale2_header_tag_smp smp_tag = {
     .flags = 0
 };
 
+static struct stivale2_struct_tag_modules mod_tag = {
+    .tag = {
+        .identifier = STIVALE2_STRUCT_TAG_MODULES_ID,
+        .next = (uint64_t)&smp_tag
+    },
+    .module_count = 0
+};
+
 
 __attribute__((section(".stivale2hdr"), used)) 
 static struct stivale2_header stivale_hdr = {
     .entry_point = (uint64_t)(_start),
     .stack = (uintptr_t)stack + sizeof(stack),
     .flags = 0,
-    .tags = (uintptr_t)&smp_tag
+    .tags = (uintptr_t)&mod_tag
 };

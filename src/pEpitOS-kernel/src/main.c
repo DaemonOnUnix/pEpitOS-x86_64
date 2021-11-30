@@ -5,10 +5,10 @@
 
 #include "multicore/interrupt_lock.h"
 
-// void hello()
-// {
-//     LOG_OK("Hello");
-// }
+void hello()
+{
+    LOG_OK("Hello");
+}
 
 void kernel_main(void* generic_structure) {
     
@@ -22,8 +22,10 @@ void kernel_main(void* generic_structure) {
 #   endif
     
     // launch_tests();
+    interface->launching_addresses[1] = hello;
+    // for(volatile size_t i = 0; i < 100000000; i++);
     // interface->launching_addresses[1] = hello;
-    // interface->launching_addresses[2] = hello;
+    interface->launching_addresses[2] = hello;
     // interface->launching_addresses[3] = hello;
     // interface->launching_addresses[4] = hello;
     

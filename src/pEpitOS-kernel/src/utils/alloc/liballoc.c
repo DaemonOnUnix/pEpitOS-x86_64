@@ -1,5 +1,11 @@
 #include <alloc/liballoc.h>
 
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Waddress"
+#pragma GCC diagnostic ignored "-Wint-conversion"
+#pragma GCC diagnostic ignored "-Wpointer-to-int-cast"
+
 /**  Durand's Ridiculously Amazing Super Duper Memory functions.  */
 
 #define DEBUG

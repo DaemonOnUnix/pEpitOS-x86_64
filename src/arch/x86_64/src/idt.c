@@ -165,7 +165,7 @@ void setup_idt(void) {
 }
 
 void log_stackframe(volatile stackframe* regs){
-    LOG_INFO("Stackframe :\nr15 : {x}\tr14 : {x}\tr13 : {x}\tr12 : {x}\nr11 : {x}\tr10 : {x}\tr9 : {x}\tr8 : {x}\nrbp : {x}\t"
+    LOG_PANIC("Stackframe :\nr15 : {x}\tr14 : {x}\tr13 : {x}\tr12 : {x}\nr11 : {x}\tr10 : {x}\tr9 : {x}\tr8 : {x}\nrbp : {x}\t"
         "rdi : {x}\trsi : {x}\nrdx : {x}\trcx : {x}\trbx : {x}\nrax : {x}\tint_no : {x}\t err_code : {x}\nrip : {x}\tcs : {x}\trflags : {x}\nprev. rsp : {x} \tss : {x}", 
         regs->r15, 
         regs->r14, 

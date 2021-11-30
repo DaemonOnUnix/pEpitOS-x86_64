@@ -6,7 +6,8 @@ ARCH_FOLDER = arch
 KERNEL_DIR = pEpitOS-kernel
 
 CC = gcc-9
-CFLAGS = -Wall -Wextra -O3 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ -g
+LOGS = -DVMM_DEBUG
+CFLAGS = -Wall -Wextra -O3 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ $(LOGS)
 
 ASMPARAM = -f elf64 -F dwarf
 

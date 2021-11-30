@@ -17,6 +17,7 @@
 #include "tasking/tasking.h"
 #include "interrupts/defined_interrupts.h"
 #include "interface_struct/interface_struct.h"
+#include "syscall/syscall.h"
 
 void enable_ints(){
     asm volatile("sti");
@@ -63,6 +64,8 @@ interface_struct *bootstrap_arch(void* structure){
 
     ASSERT(smp_infos->cpu_count > 0, "CPU count is {d}, at addr {x}", "CPU count is {d}, at addr {x}", smp_infos->cpu_count, (uintptr_t)smp_infos);
 
+    struct stivale2_struct_tag_modules* modules_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MODULES_ID);
+    LOG_INFO("Modules at {x}, has {d} entries.", modules_tag, modules_tag->module_count);
 
     struct stivale2_struct_tag_rsdp * rsdp_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_RSDP_ID);
     parse_RSDP(rsdp_tag->rsdp);
@@ -102,6 +105,8 @@ interface_struct *bootstrap_arch(void* structure){
 
     asm volatile("sti");
 
+    syscall_initialize();
+
     launch_APs(smp_infos, interface.launching_addresses);
 
     while (get_booted_cpus_count() != smp_infos->cpu_count);
@@ -110,6 +115,7 @@ interface_struct *bootstrap_arch(void* structure){
     interface.core_number = smp_infos->cpu_count;
     for(size_t i = 0; i < 32; i++)
         interface.launching_addresses[i] = (void*)1;
+
     return &interface;
 
 }
