@@ -1,8 +1,7 @@
 ENTRY(_main)
 SECTIONS
 {
-
-
+    . = 0x1000;
     .entry : ALIGN(4096) {
         KEEP(*(.entry))
     }

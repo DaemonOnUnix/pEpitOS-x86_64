@@ -18,6 +18,7 @@
 #include "interrupts/defined_interrupts.h"
 #include "interface_struct/interface_struct.h"
 #include "syscall/syscall.h"
+#include "init/initfs.h"
 
 void enable_ints(){
     asm volatile("sti");
@@ -65,7 +66,15 @@ interface_struct *bootstrap_arch(void* structure){
     ASSERT(smp_infos->cpu_count > 0, "CPU count is {d}, at addr {x}", "CPU count is {d}, at addr {x}", smp_infos->cpu_count, (uintptr_t)smp_infos);
 
     struct stivale2_struct_tag_modules* modules_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MODULES_ID);
-    LOG_INFO("Modules at {x}, has {d} entries.", modules_tag, modules_tag->module_count);
+    LOG_OK("Modules at {x}, has {d} entries.", modules_tag, modules_tag->module_count);
+    for(int i = 0; i < modules_tag->module_count; i++){
+        struct stivale2_module* module = modules_tag->modules + i;
+        LOG_INFO("Module {d} : {s}", i, module->string);
+        // for(volatile size_t i = 0; i < 0x20; i++)
+        //     LOG_OK("{x}", *(uint8_t*)(module->begin + i));
+        // PANIC("");
+        register_new_file(physical_to_stivale(module->string), physical_to_stivale(module->begin), physical_to_stivale(module->end));
+    }
 
     struct stivale2_struct_tag_rsdp * rsdp_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_RSDP_ID);
     parse_RSDP(rsdp_tag->rsdp);

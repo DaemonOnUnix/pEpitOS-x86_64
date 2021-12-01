@@ -24,9 +24,9 @@ void enable_tasking(){
 void switch_task_stackframe(volatile stackframe* regs, volatile stackframe* to_inject){
     LOG_INFO("Injecting registers...");
     LOG_INFO("IP before : {x}, after : {x}", regs->rip, to_inject->rip);
-    // log_stackframe(regs);
+    log_stackframe(regs);
     *regs = *to_inject;
-    // log_stackframe(regs);
+    log_stackframe(regs);
 }
 
 context_save* get_context(){

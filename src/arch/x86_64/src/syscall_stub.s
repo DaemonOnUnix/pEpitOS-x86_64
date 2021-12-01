@@ -41,3 +41,4 @@ syscall_stub:
     call arch_syscall_handler
     pop_regs
     add rsp, 128
+    o64 sysret

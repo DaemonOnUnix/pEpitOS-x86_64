@@ -1,13 +1,13 @@
 #include "tables/gdt.h"
 #include "freestanding.h"
 #include "log/log.h"
-
+#define GDT_DEBUG
 #ifndef GDT_DEBUG
 #undef LOG_INFO
 #define LOG_INFO(...)
 #endif
 
-#define nGDT_ENTRIES 3
+#define nGDT_ENTRIES 6
 
 #define GDT_SEGMENT (0b00010000)
 #define GDT_PRESENT (0b10000000)
@@ -55,6 +55,26 @@ gdt_entry create_gdt_entry(uint32_t base, uint32_t limit, uint8_t granularity, u
 
 static gdt_t gdt;
 static gdt_descriptor gdt_d;
+/*
+struct PACKED tss
+{
+    uint32_t reserved;
+
+    uint64_t rsp[3];
+    uint8_t granularity : 4;
+    uint8_t base24_31;
+};
+
+static struct tss _tss = {
+    .reserved = 0,
+    .rsp = {},
+    .reserved0 = 0,
+    .ist = {},
+    .reserved1 = 0,
+    .reserved2 = 0,
+    .reserved3 = 0,
+    .iopb_offset = 0,
+};*/
 
 void setup_gdt(){
 	LOG_INFO("Initializing GDT...");
@@ -66,6 +86,15 @@ void setup_gdt(){
 
 	gdt.entries[GDT_KERNEL_DATA] = quick_entry(GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE, 0);
 	LOG_INFO("Kernel data descriptor created, at offset {x}.", GDT_KERNEL_DATA*sizeof(gdt_entry));
+
+    gdt.entries[3] = create_gdt_entry(0, 0, 0, 0);
+    LOG_INFO("Null descriptor created, at offset {x}.", 3*sizeof(gdt_entry));
+
+    gdt.entries[GDT_USER_CODE] = quick_entry(GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_EXECUTABLE | GDT_USER, GDT_LONG_MODE_GRANULARITY);
+    LOG_INFO("User code descriptor created, at offset {x}.", GDT_USER_CODE*sizeof(gdt_entry));
+
+    gdt.entries[GDT_USER_DATA] = quick_entry(GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_USER, 0);
+    LOG_INFO("User data descriptor created, at offset {x}.", GDT_USER_DATA*sizeof(gdt_entry));
 
 	gdt_d.offset = (uint64_t)(&gdt);
 	gdt_d.size = sizeof(gdt_t) -1;

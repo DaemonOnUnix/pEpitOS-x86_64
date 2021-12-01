@@ -1,6 +1,6 @@
 CC = gcc-9
 LOGS =
-CFLAGS = -Wall -Wextra -O3 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ $(LOGS)
+CFLAGS = -Wall -Wextra -O0 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ $(LOGS)
 
 ASMPARAM = -f elf64 -F dwarf
 
@@ -12,7 +12,6 @@ INTERNALLDFLAGS :=     \
 	-nostdlib      \
 	-T$(LINK_SCRIPT)    \
 	-z max-page-size=0x1000\
-	-fPIE -static
 	#-Wl,-static,-pie,--no-dynamic-linker,-ztext -fno-pic -fpie 
 
 INTERNALCFLAGS  :=                  \

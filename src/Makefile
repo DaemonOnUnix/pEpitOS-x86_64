@@ -6,7 +6,7 @@ ARCH_FOLDER = arch
 KERNEL_DIR = pEpitOS-kernel
 
 CC = gcc-9
-LOGS = -DVMM_DEBUG
+LOGS = -DVMM_DEBUG -DIDT_DEBUG -DGDT_DEBUG
 CFLAGS = -Wall -Wextra -O3 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ $(LOGS)
 
 ASMPARAM = -f elf64 -F dwarf
@@ -16,7 +16,9 @@ BUILD = build
 ASSETS = ../assets/
 LOGO = $(ASSETS)/pEpitOS-logo-1.bmp
 
-ISO_FILES = $(KERNEL).elf limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin $(LOGO)
+RAMDISK = pEpitOS-kernel/src/userspace/build
+
+ISO_FILES = $(KERNEL).elf limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin $(LOGO) $(RAMDISK)
 
 CORE_NUM = 4
 
@@ -62,7 +64,7 @@ $(shell mkdir -p $(addprefix $(BUILD)/,$(SRCDIRS)))
 
 all: NODEBUG
 
-.PHONY: all clean NODEBUG DEBUG clean_deps
+.PHONY: all clean NODEBUG DEBUG clean_deps ramdisk
 
 NODEBUG: $(KERNEL).iso
 	@$(QEMU) $(QEMU_PARAMS_NODEBUG) $<
@@ -70,9 +72,9 @@ NODEBUG: $(KERNEL).iso
 DEBUG: $(KERNEL).iso
 	@$(QEMU) $(QEMU_PARAMS_DEBUG) $(QEMU_PARAMS_NODEBUG) $<
 
-$(KERNEL).iso: $(KERNEL).elf limine/Makefile
+$(KERNEL).iso: ramdisk $(KERNEL).elf limine/Makefile
 	@mkdir -p iso_root
-	@cp -v $(ISO_FILES) iso_root/
+	cp -v -r $(ISO_FILES) iso_root/
 	@xorriso -as mkisofs -b limine-cd.bin \
 			-no-emul-boot -boot-load-size 4 -boot-info-table \
 			-eltorito-alt-boot -e limine-eltorito-efi.bin \
@@ -92,8 +94,12 @@ $(BUILD)/%.o: %.c
 $(BUILD)/%.o: %.s
 	@nasm $(ASMPARAM) -o $@ $<
 
+ramdisk:
+	@make -C pEpitOS-kernel/src/userspace
+
 clean:
 	@rm -rf $(KERNEL).elf $(OBJ) image.hdd $(KERNEL).iso $(BUILD) log.txt iso_root
+	@make -C pEpitOS-kernel/src/userspace clean
 
 clean_deps: clean
 	@rm -rf limine
