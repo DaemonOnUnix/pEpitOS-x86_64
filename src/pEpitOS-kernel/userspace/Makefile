@@ -1,6 +1,6 @@
 CC = gcc-9
 LOGS =
-CFLAGS = -Wall -Wextra -O0 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ $(LOGS)
+CFLAGS = -Wall -Wextra -O3 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ $(LOGS)
 
 ASMPARAM = -f elf64 -F dwarf
 

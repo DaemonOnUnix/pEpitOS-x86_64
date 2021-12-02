@@ -17,7 +17,7 @@
 #include "tasking/tasking.h"
 #include "interrupts/defined_interrupts.h"
 #include "interface_struct/interface_struct.h"
-#include "syscall/syscall.h"
+#include "syscall-enabling/syscall.h"
 #include "init/initfs.h"
 
 void enable_ints(){

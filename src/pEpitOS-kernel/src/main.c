@@ -26,7 +26,7 @@ void kernel_main(void* generic_structure) {
 #   endif
     
     // launch_tests();
-    // interface->launching_addresses[1] = hello;
+    interface->launching_addresses[1] = hello;
     // for(volatile size_t i = 0; i < 100000000; i++);
     // interface->launching_addresses[1] = hello;
     // interface->launching_addresses[2] = hello;
@@ -44,18 +44,11 @@ void kernel_main(void* generic_structure) {
     // //enable_mapping(plouf.page_directory);
     kmmap(0, first.end - first.begin, 7| (1 << 63));
     memcpy(0, first.begin, first.end - first.begin);
-    // modify_target_task(0, &plouf);
     LOG_OK("plouf");
     kmmap(0x10000, 0x2000, 7 | (1 << 63));
-
-    //for(volatile size_t i = 0; i < 0x20; i++)
-    //    LOG_OK("{x}", *(uint8_t*)(0x2000 + i));
-
     asm volatile("movq rsp, %0" : : "r"(0x11000ll));
-    //asm volatile("mov ds, 0x28");
     asm volatile ("mov ecx, 0x1000");
     asm volatile ("mov r11, 0x002");
-    //while(1);
     asm volatile ("sysretq");
 
     // unlock_ints();

@@ -1,5 +1,5 @@
 %macro save_regs 0
-    push rax
+    ; push rax
     push rbx
     push rcx
     push rdx

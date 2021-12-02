@@ -49,4 +49,6 @@ void setup_context_frame();
 void kmmap_physical(uint64_t addr, uint64_t physical_addr, size_t size, uint64_t flags);
 void* map_physical(uint64_t physical_addr, size_t size);
 uint64_t search_available(uintptr_t base_addr, size_t size);
+uintptr_t convert_to_arch_flags(uintptr_t flags);
+
 #endif

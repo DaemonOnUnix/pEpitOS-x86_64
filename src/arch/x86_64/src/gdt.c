@@ -90,11 +90,11 @@ void setup_gdt(){
     gdt.entries[3] = create_gdt_entry(0, 0, 0, 0);
     LOG_INFO("Null descriptor created, at offset {x}.", 3*sizeof(gdt_entry));
 
-    gdt.entries[GDT_USER_CODE] = quick_entry(GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_EXECUTABLE | GDT_USER, GDT_LONG_MODE_GRANULARITY);
-    LOG_INFO("User code descriptor created, at offset {x}.", GDT_USER_CODE*sizeof(gdt_entry));
-
     gdt.entries[GDT_USER_DATA] = quick_entry(GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_USER, 0);
     LOG_INFO("User data descriptor created, at offset {x}.", GDT_USER_DATA*sizeof(gdt_entry));
+
+    gdt.entries[GDT_USER_CODE] = quick_entry(GDT_PRESENT | GDT_SEGMENT | GDT_READWRITE | GDT_EXECUTABLE | GDT_USER, GDT_LONG_MODE_GRANULARITY);
+    LOG_INFO("User code descriptor created, at offset {x}.", GDT_USER_CODE*sizeof(gdt_entry));
 
 	gdt_d.offset = (uint64_t)(&gdt);
 	gdt_d.size = sizeof(gdt_t) -1;
