@@ -4,6 +4,7 @@
 #include "freestanding.h"
 #include "arch/arch.h"
 #include "multicore/lock.h"
+#include "multicore/interrupt_lock.h"
 #include "multicore/common_locks.h"
 
 #define roprint(x) write_string(x)
@@ -34,11 +35,11 @@ void printf(char *format, ...);
 
 CREATE_PROTOS(print);
 
-#define LOG_OK(...)      {get_lock_print(); roprint(OK_STRING);    if(is_multicore()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
-#define LOG_SECTION(...) {get_lock_print(); roprint(OK_STRING);    if(is_multicore()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
-#define LOG_ERR(...)     {get_lock_print(); roprint(ERR_STRING);   if(is_multicore()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
-#define LOG_INFO(...)    {get_lock_print(); roprint(INFO_STRING);  if(is_multicore()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
-#define LOG_PANIC(...)   {get_lock_print(); roprint(PANIC_STRING); if(is_multicore()) printf( COL_CYAN "(core {d}) ", COREID); printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print();}
+#define LOG_OK(...)      {lock_ints(); get_lock_print(); roprint(OK_STRING);    if(is_multicore()) { printf( COL_CYAN "(core {d}) ", COREID);} printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print(); unlock_ints();}
+#define LOG_SECTION(...) {lock_ints(); get_lock_print(); roprint(OK_STRING);    if(is_multicore()) { printf( COL_CYAN "(core {d}) ", COREID);} printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print(); unlock_ints();}
+#define LOG_ERR(...)     {lock_ints(); get_lock_print(); roprint(ERR_STRING);   if(is_multicore()) { printf( COL_CYAN "(core {d}) ", COREID);} printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print(); unlock_ints();}
+#define LOG_INFO(...)    {lock_ints(); get_lock_print(); roprint(INFO_STRING);  if(is_multicore()) { printf( COL_CYAN "(core {d}) ", COREID);} printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print(); unlock_ints();}
+#define LOG_PANIC(...)   {lock_ints(); get_lock_print(); roprint(PANIC_STRING); if(is_multicore()) { printf( COL_CYAN "(core {d}) ", COREID);} printf(COL_BLUE "{s}:{d} f. {s} -> " COL_DEFAULT, __FILE__, __LINE__, __func__); printf(__VA_ARGS__); roprint("\n"); set_lock_print(); unlock_ints();}
 #define PANIC(...)       {LOG_PANIC(__VA_ARGS__); while(1);}
 
 #define ASSERT(C, __TRUE, __FALSE, ...) {if(C){ LOG_OK(__TRUE, ##__VA_ARGS__); } else { LOG_PANIC(__FALSE, ##__VA_ARGS__); disable_ints(); halt();}}

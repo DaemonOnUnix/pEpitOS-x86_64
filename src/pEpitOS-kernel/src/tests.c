@@ -1,4 +1,3 @@
-#define PTESTS
 #ifdef PTESTS
 
 #define TEST_LAUNCH(id) {\

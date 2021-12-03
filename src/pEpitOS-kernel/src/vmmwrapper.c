@@ -18,5 +18,5 @@ uintptr_t space_alloc(size_t size, uintptr_t flags)
 void space_free(uintptr_t addr, size_t size)
 {
     kmunmap(addr, size, MEM_TO_UPPER);
-    return 0;
+    // return 0;
 }

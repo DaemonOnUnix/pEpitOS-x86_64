@@ -23,7 +23,7 @@ void map_pics(){
         LOG_PANIC("Can't map PICs with unitialized data.");
         HALT();
     }
-    // HALT();
+    // Should desactivate caching for this memory region
     kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address, IOAPIC_LENGTH*2, 2);
     kmmap_physical(LAPIC_VIRTUAL_ADDRESS, apic_info.lapic_address, LAPIC_LENGTH*2, 2);    
 }
@@ -65,13 +65,8 @@ void cpu_send_EOI(){
 #define PIC2_DATA (PIC2 + 1)
 
 void disable_pic() {
-
-
     asm_out8(PIC2_DATA, 0xff);
     asm_out8(PIC1_DATA, 0xff);
-
-
-
 }
 
 void redirect_interrupts(){

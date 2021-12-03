@@ -1,7 +1,7 @@
 #include "tables/gdt.h"
 #include "freestanding.h"
 #include "log/log.h"
-#define GDT_DEBUG
+
 #ifndef GDT_DEBUG
 #undef LOG_INFO
 #define LOG_INFO(...)

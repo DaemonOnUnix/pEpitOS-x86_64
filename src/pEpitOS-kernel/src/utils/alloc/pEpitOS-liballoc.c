@@ -26,6 +26,6 @@ extern void* liballoc_alloc(int n)
 
 extern int liballoc_free(void* p, int n)
 {
-    space_free(p, n);
+    space_free((uintptr_t)p, n);
     return 0;
 }

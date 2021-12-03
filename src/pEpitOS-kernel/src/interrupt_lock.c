@@ -1,6 +1,13 @@
 #include "arch/arch.h"
 #include "log/log.h"
 
+#ifndef DEBUG_INTERRUPT_LOCK
+#undef LOG_INFO
+#define LOG_INFO(...)
+#undef LOG_OK
+#define LOG_OK(...)
+#endif
+
 static uint8_t lock_level[ARCH_MAX_CORE_NUM] = {0};
 
 void unlock_ints(){

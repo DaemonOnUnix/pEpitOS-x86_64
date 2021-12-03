@@ -67,13 +67,13 @@ interface_struct *bootstrap_arch(void* structure){
 
     struct stivale2_struct_tag_modules* modules_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_MODULES_ID);
     LOG_OK("Modules at {x}, has {d} entries.", modules_tag, modules_tag->module_count);
-    for(int i = 0; i < modules_tag->module_count; i++){
+    for(size_t i = 0; i < modules_tag->module_count; i++){
         struct stivale2_module* module = modules_tag->modules + i;
         LOG_INFO("Module {d} : {s}", i, module->string);
         // for(volatile size_t i = 0; i < 0x20; i++)
         //     LOG_OK("{x}", *(uint8_t*)(module->begin + i));
         // PANIC("");
-        register_new_file(physical_to_stivale(module->string), physical_to_stivale(module->begin), physical_to_stivale(module->end));
+        register_new_file(physical_to_stivale(module->string), (uintptr_t)physical_to_stivale(module->begin), (uintptr_t)physical_to_stivale(module->end));
     }
 
     struct stivale2_struct_tag_rsdp * rsdp_tag = stivale2_get_tag(stivale2_struct, STIVALE2_STRUCT_TAG_RSDP_ID);
@@ -97,6 +97,7 @@ interface_struct *bootstrap_arch(void* structure){
     
     init_pmm((uintptr_t)physical_to_stivale(first_frame));
     init_vmm();
+    LOG_ERR("plouf");
 
     asm volatile("mov cr3, %0"::"a"(create_page_directory()));
     LOG_OK("Page directory created and loaded successfully.");

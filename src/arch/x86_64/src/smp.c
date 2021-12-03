@@ -15,6 +15,7 @@
 #include <stdatomic.h>
 #include "multicore/lock.h"
 #include "UEFI/APIC.h"
+#include "syscall-enabling/syscall.h"
 
 
 // static uint8_t value = 0;
@@ -43,7 +44,9 @@ void set_core_id(uint32_t lapic_id){
 }
 
 uint32_t get_core_id(){
-    return cpuReadLAPIC(0x20) >> 24;
+    if(smp_status)
+        return cpuReadLAPIC(0x20) >> 24;
+    return 0;
 }
 
 CREATE_LOCK(1)
@@ -78,6 +81,7 @@ void _start_core(struct stivale2_smp_info* smp_info){
     enable_APIC();
     init_APIC_interrupt();
     init_APIC_timer();
+    syscall_initialize();
 
     smp_status = 1;
     smp_info = physical_to_stivale(smp_info);
@@ -114,6 +118,7 @@ void launch_APs(struct stivale2_struct_tag_smp* smp_infos, void (*_launching_add
         }
         LOG_ERR("Launching AP. Id {d}", smp_infos->smp_info[i].lapic_id);
         smp_infos->smp_info[i].target_stack = (uint64_t)physical_to_stivale(get_frame()) + 4096-64;
+        LOG_INFO("Target stack {x}", smp_infos->smp_info[i].target_stack);
         smp_infos->smp_info[i].goto_address = (uint64_t)_start_core;
     }
     RELEASE_LOCK(LOCK_NAME(Bootstrap));
