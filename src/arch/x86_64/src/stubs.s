@@ -163,9 +163,9 @@ global enable_sse
 enable_sse:
     push    rbp
     mov     rbp, rsp
-    mov rax, cr0
-    or rax, 2
-    mov cr0, rax
+    mov     rax, cr0
+    or      rax, 2
+    mov     cr0, rax
     mov     eax, 0
     pop     rbp
     ret

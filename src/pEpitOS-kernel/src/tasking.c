@@ -102,7 +102,7 @@ task create_task_from_func(uintptr_t func_ptr,
     uintptr_t stack_size, uintptr_t stack_virtual_addr, bool is_userspace, 
     uint16_t cs, uint16_t ss, uint64_t rflags){
     lock_ints();
-    // disable_preemption();
+
     mapping_t current_page_directory = get_current_mapping();
     task to_return = (task){
         .page_directory = create_page_directory()
@@ -110,12 +110,15 @@ task create_task_from_func(uintptr_t func_ptr,
     enable_mapping(to_return.page_directory);
     initialize_mapping();
     LOG_INFO("Mapping initialized.");
+
     setup_context_frame();
+
     kmmap(stack_virtual_addr & CLEAN_BITS_MASK, (stack_size & CLEAN_BITS_MASK) + ARCH_PAGE_SIZE, 3 & (is_userspace ? 4 : 0));
     LOG_INFO("Creating task with func_ptr = {x}", func_ptr);
     get_context()->stack_save.ip = func_ptr;
     // get_context()->stack_save.useresp = 0xdeadb000 + 64 * 4;//(stack_virtual_addr + stack_size) & CLEAN_BITS_MASK ;
     get_context()->stack_save.ret_sp = stack_virtual_addr + stack_size;//(stack_virtual_addr + stack_size) & CLEAN_BITS_MASK ;
+
 #   ifdef X86_64
         get_context()->stack_save.rflags = rflags;
         get_context()->stack_save.cs = cs;
@@ -123,9 +126,10 @@ task create_task_from_func(uintptr_t func_ptr,
 #   endif
     //get_context()->stack_save.rsp = stack_virtual_addr + stack_size & CLEAN_BITS_MASK + ARCH_PAGE_SIZE - 8;
     // asm volatile("mov cr3, %0" :: "a"(current_page_directory));
+
     enable_mapping(current_page_directory);
-    // enable_preemption();
     unlock_ints();
+
     LOG_OK("Task created successfully");
     return to_return;
 }

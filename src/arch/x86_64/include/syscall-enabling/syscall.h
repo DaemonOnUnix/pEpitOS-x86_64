@@ -14,7 +14,6 @@ struct syscall_pack
     uint64_t arg6;
 };
 
-
 void syscall_initialize(void);
 
 #endif

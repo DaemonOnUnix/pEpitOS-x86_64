@@ -3,8 +3,18 @@
 
 #include "arch/arch.h"
 
+enum task_init_flags
+{
+    TASK_NO_FLAGS = 0,
+    TASK_ACCESS_MEMORY = 1 << 0,
+    TASK_ACCESS_IO = 1 << 1,
+    TASK_ACCESS_INTERRUPT = 1 << 2,
+    TASK_DRIVER = 1 << 3,
+};
+
 typedef struct {
     mapping_t page_directory;
+    enum task_init_flags init_flags;
 } task;
 
 void switch_task_stackframe(volatile stackframe* regs, volatile stackframe* to_inject);

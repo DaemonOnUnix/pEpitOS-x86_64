@@ -1,11 +1,9 @@
 #include <stdint.h>
 #include <stddef.h>
 
-// static volatile char test_string[] = "Hello world!";
-// static volatile char *rodata = "Hello world!";
+#define ASM(...) asm volatile(__VA_ARGS__)
 
 enum map_flags {
-
     MAP_PRESENT = 1,
     MAP_WRITE = 2,
     MAP_USER = 4,
@@ -19,8 +17,8 @@ void *mmap(uintptr_t addr, size_t size, int flags);
 __attribute__((section(".entry"), used))
 void _main()
 {
-    asm volatile("push rbp");
-    asm volatile("mov rbp, rsp");
+    ASM("push rbp");
+    ASM("mov rbp, rsp");
     //asm volatile("int 0x80");
     volatile char *plouf = mmap(0x780000, 0x1000, MAP_PRESENT | MAP_WRITE | MAP_USER);
     *plouf = 5;
@@ -30,12 +28,12 @@ void _main()
 
 void *mmap(uintptr_t addr, size_t size, int flags)
 {
-    asm volatile("mov r15, 1");
-    asm volatile("mov rdi, %0" : : "r"(addr));
-    asm volatile("mov rsi, %0" : : "r"(size));
-    asm volatile("mov r8, %0" : : "r"((uint64_t)flags));
+    ASM("mov r15, 1");
+    ASM("mov rdi, %0" : : "r"(addr));
+    ASM("mov rsi, %0" : : "r"(size));
+    ASM("mov r8, %0" : : "r"((uint64_t)flags));
     void *ret;
-    asm volatile("syscall" : "=a"(ret):);
+    ASM("syscall" : "=a"(ret):);
     return ret;
 }
 
