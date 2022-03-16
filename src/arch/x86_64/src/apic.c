@@ -20,12 +20,18 @@ extern apic_info_t apic_info;
 
 void map_pics(){
     if(!LAPIC_VIRTUAL_ADDRESS || !IOAPIC_VIRTUAL_ADDRESS){
-        LOG_PANIC("Can't map PICs with unitialized data.");
-        HALT();
+        IOAPIC_VIRTUAL_ADDRESS = (uintptr_t)map_physical(apic_info.ioapic.address, IOAPIC_LENGTH*2);
+        LAPIC_VIRTUAL_ADDRESS =  (uintptr_t)map_physical(apic_info.lapic_address, LAPIC_LENGTH*2);
+        LOG_INFO("IOAPIC mapped at address: {x} | LAPIC mapped at address: {x}", IOAPIC_VIRTUAL_ADDRESS, LAPIC_VIRTUAL_ADDRESS);
+        // map_pics();
+        // LOG_PANIC("Can't map PICs with unitialized data.");
+        // HALT();
+    } else {
+        // LOG_INFO("PICs already mapped");
+        kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address, IOAPIC_LENGTH*2, 2);
+        kmmap_physical(LAPIC_VIRTUAL_ADDRESS, apic_info.lapic_address, LAPIC_LENGTH*2, 2);    
     }
     // Should desactivate caching for this memory region
-    kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address, IOAPIC_LENGTH*2, 2);
-    kmmap_physical(LAPIC_VIRTUAL_ADDRESS, apic_info.lapic_address, LAPIC_LENGTH*2, 2);    
 }
 
 void cpuWriteIoAPIC(uint32_t reg, uint32_t value){
@@ -85,7 +91,6 @@ void redirect_interrupts(){
 }
 
 void map_APIC(){
-    ONCE();
     IOAPIC_VIRTUAL_ADDRESS = (uintptr_t)map_physical(apic_info.ioapic.address, IOAPIC_LENGTH*2);
     LAPIC_VIRTUAL_ADDRESS =  (uintptr_t)map_physical(apic_info.lapic_address, LAPIC_LENGTH*2);
     LOG_INFO("IOAPIC mapped at address: {x} | LAPIC mapped at address: {x}", IOAPIC_VIRTUAL_ADDRESS, LAPIC_VIRTUAL_ADDRESS);
@@ -109,6 +114,7 @@ void init_APIC_timer(){
     hpet_reset();
     size_t tick_to_wait = hpet_ms_to_tick(10);
     
+    // Use divider 16
     cpuWriteLAPIC(APIC_REGISTER_TIMER_DIV, 0x3);
     cpuWriteLAPIC(APIC_REGISTER_TIMER_INITCNT, (uint32_t)-1);
     
@@ -117,12 +123,11 @@ void init_APIC_timer(){
     cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_MASKED);
     uint32_t ticksIn10ms = 0xFFFFFFFF - cpuReadLAPIC(APIC_REGISTER_TIMER_CURRCNT);
     LOG_INFO("There is {x} | {d} ticks in 10 ms", ticksIn10ms,ticksIn10ms);
-    cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, 32 | 0x20000);
+    // cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, 32 | 0x20000);
     cpuWriteLAPIC(APIC_REGISTER_TIMER_DIV, 0x3);
     cpuWriteLAPIC(APIC_REGISTER_TIMER_INITCNT, ticksIn10ms*300);
+    // cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_MASKED);
 }
-
-
 
 void init_APIC_interrupt(){
     LOG_INFO("Configuring non maskable interrupt")
@@ -148,4 +153,15 @@ void send_interrupt_to_core(uint8_t core_number, uint8_t interrupt_number){
     cpuWriteLAPIC(0x300, to_send.value);
     volatile interrupt_message* result = (void*)(LAPIC_VIRTUAL_ADDRESS + 0x300);
     while(result->delivery_status);
+}
+
+void mask_timer(){
+    char volatile *lapic = (char*)physical_to_stivale(apic_info.lapic_address);
+    LOG_INFO("Masking timer with apic address: {x}", lapic);
+    *(lapic + APIC_REGISTER_LVT_TIMER) = *(lapic + APIC_REGISTER_LVT_TIMER) | APIC_LVT_INT_MASKED;
+}
+
+void unmask_timer(uint8_t interrupt_number){
+    char volatile *lapic = (char*)physical_to_stivale(apic_info.lapic_address);
+    *(lapic + APIC_REGISTER_LVT_TIMER) = *(lapic + APIC_REGISTER_LVT_TIMER) & ~APIC_LVT_INT_MASKED;
 }

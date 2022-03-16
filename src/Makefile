@@ -5,7 +5,7 @@ ARCH_FOLDER = arch
 
 KERNEL_DIR = pEpitOS-kernel
 
-CC = gcc-9
+CC = gcc
 LOGS = #-DAPIC_DEBUG  -DVMM_DEBUG -DPMM_DEBUG -DIDT_DEBUG -DGDT_DEBUG
 CFLAGS = -Wall -Wextra -Ofast -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ $(LOGS) -g
 
@@ -57,7 +57,7 @@ OBJ    := $(SFILES:%.s=$(BUILD)/%.o)
 OBJ    += $(CFILES:%.c=$(BUILD)/%.o)
 
 QEMU = qemu-system-x86_64
-QEMU_PARAMS_NODEBUG = -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 1G -smp $(CORE_NUM) -cdrom
+QEMU_PARAMS_NODEBUG = -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 1G -smp $(CORE_NUM) -enable-kvm  -cpu kvm64,+vmx -cdrom
 QEMU_PARAMS_DEBUG = -S -gdb tcp::9000
 
 $(shell mkdir -p $(addprefix $(BUILD)/,$(SRCDIRS)))

@@ -1,4 +1,4 @@
-CC = gcc-9
+CC = gcc
 LOGS =
 CFLAGS = -Wall -Wextra -O3 -DPTESTS -I$(ARCH_FOLDER)/$(ARCH)/include/ -I$(KERNEL_DIR)/include/ $(LOGS)
 

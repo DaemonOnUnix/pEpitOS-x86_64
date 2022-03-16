@@ -2,6 +2,7 @@
 #include "pmm/pmm.h"
 #include "log/log.h"
 #include "interrupts/stackframe.h"
+#include "UEFI/APIC.h"
 
 #ifndef VMM_DEBUG
 #undef LOG_INFO
@@ -13,6 +14,7 @@ static uint64_t* limine_page_directory_addr = 0;
 void init_vmm(){
     LOG_INFO("Initialising Virtual Memory Manager...");
     asm volatile("mov %0, cr3" : "=a"(limine_page_directory_addr) :);
+    // map_pics();
     limine_page_directory_addr = physical_to_stivale(limine_page_directory_addr);
     uint64_t* new_pdp = (uint64_t*)get_frame();
     uint64_t* new_pd = physical_to_stivale(new_pdp);
@@ -168,6 +170,8 @@ uintptr_t create_page_directory() {
     
     new_pd[RECURSIVE_MAPPING_ENTRY] = (uint64_t)new_pdp | 3;
     new_pd[0] = 0;
+
+    map_pics();
     
     return (uintptr_t)new_pdp;
 }

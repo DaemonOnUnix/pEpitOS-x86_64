@@ -81,6 +81,7 @@ typedef struct {
     bool ACPI : 1;
     bool APIC : 1;
     bool X2APIC : 1;
+    bool VMX : 1;
 } cpu_abilities;
 
 cpu_abilities* get_cpu_info();

@@ -20,11 +20,20 @@
 #include "syscall-enabling/syscall.h"
 #include "init/initfs.h"
 
+void mask_timer();
+void unmask_timer();
+
+static char is_apic_init = 0;
+
 void enable_ints(){
     asm volatile("sti");
+    if(is_apic_init)
+        unmask_timer();
 }
 
 void disable_ints(){
+    if(is_apic_init)
+        mask_timer();
     asm volatile("cli");
 }
 
@@ -108,12 +117,11 @@ interface_struct *bootstrap_arch(void* structure){
     enable_sse();
     
 
+    // asm volatile("cli");
     parse_RSDT();
     enable_APIC();
     init_APIC_interrupt(); // I don't know why it is working, but it is working.
-    init_APIC_timer(); 
-
-    asm volatile("sti");
+    init_APIC_timer();
 
     syscall_initialize();
 
@@ -125,7 +133,11 @@ interface_struct *bootstrap_arch(void* structure){
     interface.core_number = smp_infos->cpu_count;
     for(size_t i = 0; i < 32; i++)
         interface.launching_addresses[i] = (void*)1;
+    
+    void init_vmx();
+    init_vmx();
 
+    is_apic_init = 1;
     return &interface;
 
 }

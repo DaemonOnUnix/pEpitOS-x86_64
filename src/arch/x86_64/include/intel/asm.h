@@ -95,6 +95,24 @@ static inline void asm_write_msr(enum msr_reg msr, uint64_t value)
     asm volatile("wrmsr":: "c"((uint64_t)msr), "a"(low), "d"(high));
 }
 
+#define GEN_SET_REG(reg)                                             \
+    static inline void asm_set_##reg(uint64_t value)                           \
+    {                                                                          \
+        asm volatile("mov " #reg ", %0"                                        \
+                     :                                                         \
+                     : "r"(value));                                            \
+    }
+
+#define GEN_GET_REG(reg)                                             \
+    static inline uint64_t asm_get_##reg(void)                           \
+    {                                                                          \
+        uint64_t value;                                                       \
+        asm volatile("mov %0, " #reg                                           \
+                     : "=r"(value));                                          \
+        return value;                                                         \
+    }
+
+
 #define HALT() while(1) asm volatile("hlt")
 #define ACTIVE_MAPPING(x) asm volatile("mov cr3, %0" :: "a"(x))
 #define EVAL(...) __VA_ARGS__

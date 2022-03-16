@@ -90,7 +90,8 @@ cpu_abilities* get_cpu_info(){
         .XSAVE = (CPUID_FEAT_ECX_XSAVE) & rcx,
         .ACPI = (CPUID_FEAT_EDX_ACPI) & rdx,
         .APIC = (CPUID_FEAT_EDX_APIC) & rdx,
-        .X2APIC = (CPUID_FEAT_ECX_x2APIC) & rcx
+        .X2APIC = (CPUID_FEAT_ECX_x2APIC) & rcx,
+        .VMX = (CPUID_FEAT_ECX_VMX) & rcx,
     };
 
     LOG_INFO("Checked features :");
@@ -108,6 +109,8 @@ cpu_abilities* get_cpu_info(){
     CHECK(cpuinfo_rdx.parsed.APIC,"APIC detected","APIC unavailable");
 
     CHECK(cpuinfo_rcx.parsed.x2APIC,"x2APIC detected","x2APIC unavailable");
+
+    CHECK(cpuinfo_rcx.parsed.VMX,"VMX detected","VMX unavailable");
 
     return &cpuinfo;
 

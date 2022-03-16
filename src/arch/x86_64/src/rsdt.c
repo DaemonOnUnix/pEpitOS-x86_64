@@ -3,6 +3,7 @@
 #include "vmm/vmm.h"
 #include "UEFI/hpet.h"
 
+#define RSDT_DEBUG
 #ifndef RSDT_DEBUG
 #undef LOG_INFO
 #define LOG_INFO(...)
