@@ -13,3 +13,8 @@ all:
 	@for program in $(PROGRAMS); do \
 		$(MAKE) -C ${PROGRAM_DIR}  program=$${program} -s; \
 	done
+
+clean:
+	@for program in $(PROGRAMS); do \
+		$(MAKE) -C ${PROGRAM_DIR}  program=$${program} clean; \
+	done
