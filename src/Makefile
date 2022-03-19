@@ -16,11 +16,11 @@ BUILD = build
 ASSETS = ../assets/
 LOGO = $(ASSETS)/pEpitOS-logo-1.bmp
 
-RAMDISK = pEpitOS-kernel/userspace/build
+RAMDISK = pEpitOS-kernel/userspace/ramdisk
 
 ISO_FILES = $(KERNEL).elf limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin $(LOGO) $(RAMDISK)
 
-CORE_NUM = 4
+CORE_NUM = 2
 
 LINK_SCRIPT = $(ARCH_FOLDER)/$(ARCH)/link.ld
 
@@ -56,7 +56,7 @@ SFILES += $(shell find ./$(KERNEL_DIR) -type f -name '*.s')
 OBJ    := $(SFILES:%.s=$(BUILD)/%.o)
 OBJ    += $(CFILES:%.c=$(BUILD)/%.o)
 
-QEMU = qemu-system-x86_64
+QEMU = "/mnt/c/program files/qemu/qemu-system-x86_64.exe"
 QEMU_PARAMS_NODEBUG = -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 1G -smp $(CORE_NUM) -cdrom
 QEMU_PARAMS_DEBUG = -S -gdb tcp::9000
 

@@ -15,7 +15,7 @@ LINK_SCRIPT = ../link.ld
 LOCAL_BUILD_DIR = $(program)/build
 
 # Output directory containing each program compiled
-OUTPUT_DIR = output
+OUTPUT_DIR = ../ramdisk
 
 
 
