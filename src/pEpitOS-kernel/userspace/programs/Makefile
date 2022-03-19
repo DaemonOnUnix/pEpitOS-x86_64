@@ -42,27 +42,29 @@ INTERNALCFLAGS  :=                  \
 
 
 
-CFILES := $(shell find $(program) -type f -name '*.c' -printf '$(program)/%f\n')
-SFILES := $(shell find $(program) -type f -name '*.s' -printf '$(program)/%f\n')
+CFILES := $(shell find $(program) -type f -name '*.c' -printf '%f\n')
+SFILES := $(shell find $(program) -type f -name '*.s' -printf '%f\n')
+OBJ    := $(SFILES:%.s=$(LOCAL_BUILD_DIR)/%.o)
+OBJ    += $(CFILES:%.c=$(LOCAL_BUILD_DIR)/%.o)
 
 all: $(program)
-
 
 $(shell mkdir -p $(LOCAL_BUILD_DIR))
 
 
 $(program): $(OUTPUT_DIR)/$(program).so
 
-$(OUTPUT_DIR)/$(program).so: $(LOCAL_BUILD_DIR)/%.o
+$(OUTPUT_DIR)/$(program).so : $(OBJ)
 	$(CC) -o $@ $^ $(INTERNALLDFLAGS)
+	@echo "Compiled $^"
 
-$(LOCAL_BUILD_DIR)/%.o: $(CFILES)
+$(LOCAL_BUILD_DIR)/%.o: $(program)/%.c
 	$(CC) -c -o $@ $^  $(CFLAGS) $(INTERNALCFLAGS)
 
-$(LOCAL_BUILD_DIR)/%.o: $(CFILES)
+$(LOCAL_BUILD_DIR)/%.o: $(program)/%.c
 	@$(CC) -o $@ $(CFLAGS) $(INTERNALCFLAGS) -c $<
 
-$(LOCAL_BUILD_DIR)/%.o: $(SFILES)
+$(LOCAL_BUILD_DIR)/%.o: $(program)/%.s
 	@nasm $(ASMPARAM) -o $@ $<
 
 clean:
