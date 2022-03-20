@@ -16,7 +16,8 @@ BUILD = build
 ASSETS = ../assets/
 LOGO = $(ASSETS)/pEpitOS-logo-1.bmp
 
-RAMDISK = pEpitOS-kernel/userspace/ramdisk
+USERSPACE = userspace
+RAMDISK = $(USERSPACE)/ramdisk
 
 ISO_FILES = $(KERNEL).elf limine.cfg limine/limine.sys limine/limine-cd.bin limine/limine-eltorito-efi.bin $(LOGO) $(RAMDISK)
 
@@ -45,10 +46,10 @@ INTERNALCFLAGS  :=                  \
 	-m64
 
 SRCDIRS := $(shell find ./$(ARCH_FOLDER)/$(ARCH) -type d)
-SRCDIRS += $(shell find ./$(KERNEL_DIR) -type d)
+SRCDIRS += $(shell find ./$(KERNEL_DIR) -type d -not -name 'userspace')
 
-CFILES := $(shell find ./$(ARCH_FOLDER)/$(ARCH) -type f -name '*.c')
-SFILES := $(shell find ./$(ARCH_FOLDER)/$(ARCH) -type f -name '*.s')
+CFILES := $(shell find ./$(ARCH_FOLDER)/$(ARCH) -type f -name '*.c' -not -name 'userspace')
+SFILES := $(shell find ./$(ARCH_FOLDER)/$(ARCH) -type f -name '*.s' -not -name 'userspace')
 
 CFILES += $(shell find ./$(KERNEL_DIR) -type f -name '*.c')
 SFILES += $(shell find ./$(KERNEL_DIR) -type f -name '*.s')
@@ -95,11 +96,12 @@ $(BUILD)/%.o: %.s
 	@nasm $(ASMPARAM) -o $@ $<
 
 ramdisk:
-	@make -C pEpitOS-kernel/userspace
+	@make -C $(USERSPACE)
 
 clean:
 	@rm -rf $(KERNEL).elf $(OBJ) image.hdd $(KERNEL).iso $(BUILD) log.txt iso_root
-	@make -C pEpitOS-kernel/userspace clean
+	@make -C $(USERSPACE) clean
+	@rm -rf $(RAMDISK)
 
 clean_deps: clean
 	@rm -rf limine
