@@ -96,6 +96,7 @@ $(BUILD)/%.o: %.s
 	@nasm $(ASMPARAM) -o $@ $<
 
 ramdisk:
+	@mkdir -p $(RAMDISK)
 	@make -C $(USERSPACE)
 
 clean:
