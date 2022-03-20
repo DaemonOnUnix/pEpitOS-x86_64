@@ -22,7 +22,7 @@ void register_new_file(char* name, uintptr_t begin, uintptr_t end)
     initrd_files[file_count].begin = begin;
     initrd_files[file_count].end = end;
     my_strncpy(initrd_files[file_count].name, name, MAX_FILENAME_SIZE);
-
+    file_count++;
 }
 
 static char my_strcmp(char* a, char* b)
