@@ -57,7 +57,7 @@ SFILES += $(shell find ./$(KERNEL_DIR) -type f -name '*.s')
 OBJ    := $(SFILES:%.s=$(BUILD)/%.o)
 OBJ    += $(CFILES:%.c=$(BUILD)/%.o)
 
-QEMU = "/mnt/c/program files/qemu/qemu-system-x86_64.exe"
+QEMU = qemu-system-x86_64
 QEMU_PARAMS_NODEBUG = -no-reboot -vga std -D ./log.txt -d int,guest_errors -m 512M -boot d -M q35  -serial mon:stdio -m 1G -smp $(CORE_NUM) -cdrom
 QEMU_PARAMS_DEBUG = -S -gdb tcp::9000
 
