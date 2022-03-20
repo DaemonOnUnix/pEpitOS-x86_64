@@ -51,7 +51,7 @@ CFILES := $(shell find $(program) -type f -name '*.c' -printf '%f\n')
 SFILES := $(shell find $(program) -type f -name '*.s' -printf '%f\n')
 OBJ    := $(SFILES:%.s=$(LOCAL_BUILD_DIR)/%.o)
 OBJ    += $(CFILES:%.c=$(LOCAL_BUILD_DIR)/%.o)
-
+OBJ    += ../syscall/syscall.o
 all: $(program)
 
 $(shell mkdir -p $(LOCAL_BUILD_DIR))
@@ -70,6 +70,9 @@ $(LOCAL_BUILD_DIR)/%.o: $(program)/%.c
 
 $(LOCAL_BUILD_DIR)/%.o: $(program)/%.s
 	@nasm $(ASMPARAM) -o $@ $<
+
+../syscall/syscall.o: ../syscall/syscall.c
+	$(CC) -c -o $@ $< $(CFLAGS) $(INTERNALCFLAGS)
 
 clean:
 	@rm -rf $(LOCAL_BUILD_DIR)

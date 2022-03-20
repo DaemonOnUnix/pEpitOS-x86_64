@@ -1,7 +1,6 @@
 #include <stdint.h>
 #include <stddef.h>
-
-#define ASM(...) asm volatile(__VA_ARGS__)
+#include "../../syscall/syscall.h"
 
 enum map_flags {
     MAP_PRESENT = 1,
@@ -12,7 +11,6 @@ enum map_flags {
     MAP_SWAPPED = 32,
 };
 
-void *mmap(uintptr_t addr, size_t size, int flags);
 
 __attribute__((section(".entry"), used))
 void _main()
@@ -21,20 +19,11 @@ void _main()
     ASM("mov rbp, rsp");
     //asm volatile("int 0x80");
     volatile char *plouf = mmap(0x780000, 0x1000, MAP_PRESENT | MAP_WRITE | MAP_USER);
+    char test[] = "hello world";
+    log(test);
     *plouf = 5;
     while(1);
     _main();
-}
-
-void *mmap(uintptr_t addr, size_t size, int flags)
-{
-    ASM("mov r15, 1");
-    ASM("mov rdi, %0" : : "r"(addr));
-    ASM("mov rsi, %0" : : "r"(size));
-    ASM("mov r8, %0" : : "r"((uint64_t)flags));
-    void *ret;
-    ASM("syscall" : "=a"(ret):);
-    return ret;
 }
 
 int plouf(int a, int b){
