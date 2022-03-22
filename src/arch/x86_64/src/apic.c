@@ -6,6 +6,9 @@
 #include "utils/macros.h"
 #include "vmm/vmm.h"
 #include "intel/asm.h"
+#include "arch/arch_cpu.h"
+#include "SMP/SMP.h"
+
 static uintptr_t LAPIC_VIRTUAL_ADDRESS = 0;
 static uintptr_t IOAPIC_VIRTUAL_ADDRESS = 0;
 
@@ -23,9 +26,6 @@ void map_pics(){
         IOAPIC_VIRTUAL_ADDRESS = (uintptr_t)map_physical(apic_info.ioapic.address, IOAPIC_LENGTH*2);
         LAPIC_VIRTUAL_ADDRESS =  (uintptr_t)map_physical(apic_info.lapic_address, LAPIC_LENGTH*2);
         LOG_INFO("IOAPIC mapped at address: {x} | LAPIC mapped at address: {x}", IOAPIC_VIRTUAL_ADDRESS, LAPIC_VIRTUAL_ADDRESS);
-        // map_pics();
-        // LOG_PANIC("Can't map PICs with unitialized data.");
-        // HALT();
     } else {
         // LOG_INFO("PICs already mapped");
         kmmap_physical(IOAPIC_VIRTUAL_ADDRESS, apic_info.ioapic.address, IOAPIC_LENGTH*2, 2);
@@ -54,6 +54,17 @@ uint32_t cpuReadLAPIC(uint32_t reg){
 void cpuWriteLAPIC(uint32_t reg, uint32_t value){
     char volatile *lapic = (char volatile *)LAPIC_VIRTUAL_ADDRESS;
     *(uint32_t*)(lapic + reg)  = value;
+}
+
+void cpuOrIoAPIC(uint32_t reg, uint32_t value){
+    uint32_t volatile *ioapic = (uint32_t volatile *)IOAPIC_VIRTUAL_ADDRESS;
+    ioapic[0] = (reg & 0xff);
+    ioapic[4] |= value;
+}
+
+void cpuOrLAPIC(uint32_t reg, uint32_t value){
+    char volatile *lapic = (char volatile *)LAPIC_VIRTUAL_ADDRESS;
+    *(uint32_t*)(lapic + reg) |= value;
 }
 
 void cpu_send_EOI(){
@@ -109,24 +120,52 @@ void enable_APIC(){
     redirect_interrupts();
 }
 
-void init_APIC_timer(){
-    ONCE();
+static inline uint32_t compute_ticks_in10ms(){
     hpet_reset();
     size_t tick_to_wait = hpet_ms_to_tick(10);
-    
-    // Use divider 16
-    cpuWriteLAPIC(APIC_REGISTER_TIMER_DIV, 0x3);
     cpuWriteLAPIC(APIC_REGISTER_TIMER_INITCNT, (uint32_t)-1);
-    
     hpet_wait_tick(tick_to_wait);
-    
     cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_MASKED);
-    uint32_t ticksIn10ms = 0xFFFFFFFF - cpuReadLAPIC(APIC_REGISTER_TIMER_CURRCNT);
+    return ticksIn10ms = 0xFFFFFFFF - cpuReadLAPIC(APIC_REGISTER_TIMER_CURRCNT);
+}
+
+/**
+ * @brief Set the ticks nums in 10ms in the cpu infos
+ *
+ */
+void calibrate_APIC_timer(){
+
+    uint32_t ticks_in_10ms = compute_ticks_in10ms();
     LOG_INFO("There is {x} | {d} ticks in 10 ms", ticksIn10ms,ticksIn10ms);
-    // cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, 32 | 0x20000);
+    get_cpus()[COREID]->ticks_in_10ms = ticks_in_10ms;
+}
+
+/**
+ * @brief Set the APIC timer frequency
+ *
+ * @param frequency Hertz
+ */
+void set_APIC_timer_frequency(uint32_t frequency){
+    qASSERT(get_cpus()[COREID]->ticks_in_10ms != 0);
+    qASSERT(get_cpus()[COREID]->flags & CPU_FLAG_APIC_TIMER_MAPPED);
     cpuWriteLAPIC(APIC_REGISTER_TIMER_DIV, 0x3);
-    cpuWriteLAPIC(APIC_REGISTER_TIMER_INITCNT, ticksIn10ms*300);
-    // cpuWriteLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_MASKED);
+    cpuWriteLAPIC(APIC_REGISTER_TIMER_INITCNT, (1000*frequency)/ticks_in_10ms);
+}
+
+/**
+ * @brief Mask the apic timer
+ *
+ */
+void stop_APIC_timer(){
+    cpuOrLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_MASKED);
+}
+
+/**
+ * @brief Unmask the apic timer
+ *
+ */
+void unmask_APIC_timer(){
+    cpuOrLAPIC(APIC_REGISTER_LVT_TIMER, APIC_LVT_INT_UNMASKED);
 }
 
 void init_APIC_interrupt(){
