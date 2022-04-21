@@ -196,7 +196,9 @@ void isr_handler(volatile stackframe regs) {
     
     // LOG_INFO("ISR handler called...");
     // log_stackframe(&regs);
-    // LOG_INFO("Interrupt number : {d}.", regs.int_no);
+
+    
+    LOG_INFO("Interrupt number : {d}.", regs.int_no);
     void(*cur_isr)(volatile stackframe*) = isr[regs.int_no];
 
     LOG_INFO("Interrupt number {d}, ISR to call at : {x}", regs.int_no, cur_isr);

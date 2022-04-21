@@ -116,5 +116,5 @@ typedef struct {
 
 void parse_RSDP(uint64_t rsdp_address);
 void parse_RSDT();
-void enable_APIC();
+// void enable_APIC();
 #endif

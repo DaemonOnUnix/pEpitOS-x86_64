@@ -5,6 +5,7 @@
 #include "vmm/vmm.h"
 #include "intel/asm.h"
 
+#define HPET_DEBUG
 #ifndef HPET_DEBUG
 #undef LOG_INFO
 #define LOG_INFO(...)
@@ -14,8 +15,8 @@ static uintptr_t hpet_register_address = 0;
 static size_t period = 0;
 
 void hpet_init(HPET* hpet){
-    ONCE();
-    
+    // ONCE();
+    LOG_INFO("hpet init");
     if(hpet->address_base.address_space_id){
         LOG_PANIC("HPET is system I/o");
         HALT();

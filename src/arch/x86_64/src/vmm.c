@@ -159,6 +159,39 @@ void kmunmap(uint64_t addr, size_t size, mem_direction direction){
     }
 }
 
+
+// void copy_plm3(address_64_bits current_addr, void *dest_plm3)
+// {
+//     uint64_t *plm3_data = (uint64_t *)dest_plm3;
+//     for (size_t i = 0; i < ARCH_N_ENTRY; i++)
+//     {
+//         uint64_t *entry  = (void *)craft_addr(RECURSIVE_MAPPING_ENTRY,RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, RECURSIVE_MAPPING_ENTRY, current_addr.offset.plm4, i * sizeof(uint64_t));
+//         if (*entry != 0)
+//         {
+//             plm3_data[i] = get_frame() | 1;
+//             current_addr.offset.plm3 = i;
+//             copy_plm2(current_addr, (void *)plm3_data[i]);
+//         }
+//     }
+// }
+
+// void copy_plm2(address_64_bits current_addr, void *dest_plm2)
+// {
+//     uint64_t *plm2_data = (uint64_t *)dest_plm2;
+//     for (size_t i = 0; i < ARCH_N_ENTRY; i++)
+//     {
+//         uint64_t *entry  = (void *)craft_addr(RECURSIVE_MAPPING_ENTRY, current_addr.addr.offset.plm4, plm2_addr.offset.plm3, i * sizeof(uint64_t));
+//         if (*entry != 0)
+//         {
+//             plm2_data[i] = get_frame() | 1;
+//             current_addr.offset.plm2 = i;
+//             copy_plm1(current_addr, (void *)plm2_data[i]);
+//         }
+//     }
+// }
+
+
+
 uintptr_t create_page_directory() {
     uint64_t* new_pdp = (uint64_t*)get_frame();
     uint64_t* new_pd = physical_to_stivale(new_pdp);
