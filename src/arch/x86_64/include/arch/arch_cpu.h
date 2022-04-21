@@ -1,7 +1,6 @@
 #ifndef ARCH_CPU_H
 #define ARCH_CPU_H
 
-#include <cstdint>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -21,6 +20,8 @@ struct cpu {
     uintptr_t lapic_base;
     uint32_t ticks_in_10ms;
 };
+
+typedef struct cpu cpu_t;
 
 struct cpu* get_cpus();
 void setup_cpus();

@@ -23,4 +23,6 @@ struct cpu {
     struct task *next_task;
 };
 
+typedef struct cpu cpu_t;
+
 #endif
