@@ -132,7 +132,7 @@ interface_struct *bootstrap_arch(void *structure)
     apic_init(0xFEE00000);
     apic_software_enable();
     timer_calibration_t calib = calibrate_apic_timer(10);
-    // apic_start_timer(calib);
+    apic_start_timer(calib);
 
     // enable_APIC();
     // init_APIC_interrupt(); // I don't know why it is working, but it is working.

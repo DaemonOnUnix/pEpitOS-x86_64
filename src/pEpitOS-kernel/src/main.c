@@ -36,6 +36,15 @@ void launch_hell()
     asm volatile ("sysretq");
 }
 
+void waiting_hell()
+{
+    LOG_OK("Waiting hell");
+    asm volatile("sti");
+    while(1) {
+        asm volatile("hlt");
+    }
+}
+
 void kernel_main(void* generic_structure) {
     
     interface_struct *interface = bootstrap_arch(generic_structure);
@@ -48,15 +57,15 @@ void kernel_main(void* generic_structure) {
 #   endif
     
     // launch_tests();
-    interface->launching_addresses[1] = launch_hell;
+    interface->launching_addresses[1] = waiting_hell;
     // for(volatile size_t i = 0; i < 100000000; i++);
     // interface->launching_addresses[1] = hello;
-    interface->launching_addresses[2] = launch_hell;
+    interface->launching_addresses[2] = waiting_hell;
     interface->launching_addresses[3] = launch_hell;
     interface->launching_addresses[4] = launch_hell;
     
     LOG_OK("All work finished.");
-    
+    waiting_hell();
     LOG_INFO("Loading first elf");
     struct file first = *get_files();
     // PANIC("{s}", first.name);

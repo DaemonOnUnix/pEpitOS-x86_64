@@ -54,14 +54,19 @@ void k_invalid_opcode(volatile stackframe* regs){
     panic_common_stub(regs);
 }
 void timer(volatile stackframe* regs){
-    
     UNUSED_VAR(regs);
     
+    static size_t tick[20] = {0};
+    tick[COREID]++;
+    if (tick[COREID] % 10 == 0)
+        LOG_INFO("second: {d}", tick[COREID] / 10);
+
+    
     save_simd_context(CONTEXT_FRAME_ADDR);
-    LOG_INFO("timer plouf");
 }
 
 void switch_task_from_interrupt(volatile stackframe* regs);
+
 
 void attach_kernel_exceptions(){
     attach_isr(0, &k_div_by_zero);
@@ -70,7 +75,7 @@ void attach_kernel_exceptions(){
     attach_isr(6, &k_invalid_opcode);
     attach_isr(13, &k_gpf);
     attach_isr(14, &k_page_fault);
-    attach_isr(32, &switch_task_from_interrupt);
+    attach_isr(32, &timer);
     attach_isr(127, &change_debug_mode);
     LOG_OK("Kernel exceptions attached to ISRs.");
 }

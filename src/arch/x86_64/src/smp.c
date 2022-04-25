@@ -83,7 +83,7 @@ void _start_core(struct stivale2_smp_info *smp_info)
     LOG_OK("Page directory created and loaded successfully.");
     enable_sse();
 
-    // parse_RSDT();
+    parse_RSDT();
     // map_pics();
     // enable_APIC();
     // init_APIC_interrupt();
@@ -91,16 +91,12 @@ void _start_core(struct stivale2_smp_info *smp_info)
 
     apic_init(0xFEE00000);
     smp_status = 1;
-    uint32_t core_id = get_core_id();
-    LOG_INFO("core = {d}", get_core_id());
-    smp_status = 1;
-    LOG_INFO("test");
+
+    timer_calibration_t calib = calibrate_apic_timer(10);
     apic_software_enable();
-    // timer_calibration_t calib = calibrate_apic_timer(10);
-    // apic_start_timer(calib);
+    apic_start_timer(calib);
 
     syscall_initialize();
-    smp_status = 1;
     smp_info = physical_to_stivale(smp_info);
 
     booted_cpus_count++;

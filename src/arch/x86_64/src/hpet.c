@@ -63,6 +63,7 @@ size_t hpet_ms_to_tick(size_t ms){
 
 void hpet_wait_tick(size_t tick){
     char* ptr = (char*)hpet_register_address;
+    hpet_reset();
     hpet_start();
     while (read_mem64(ptr+HPET_Main_Counter_Value) < tick);
 }
