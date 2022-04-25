@@ -61,7 +61,7 @@ void timer(volatile stackframe* regs){
     if (tick[COREID] % 10 == 0)
         LOG_INFO("second: {d}", tick[COREID] / 10);
 
-    
+    cpu_send_EOI();
     save_simd_context(CONTEXT_FRAME_ADDR);
 }
 

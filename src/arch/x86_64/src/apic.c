@@ -132,7 +132,7 @@ timer_calibration_t calibrate_apic_timer(int hz)
 {
     uint32_t lvt_value = cpuReadLapic(APIC_REGISTER_LVT_TIMER);
     cpuWriteLapic(APIC_REGISTER_LVT_TIMER, (1 << 16)); // One shot mode, mask interrupt, vector 0, idle
-    cpuWriteLapic(APIC_REGISTER_TIMER_DIV, APIC_GET_DIVIDER(0));    // divider set to 2.
+    cpuWriteLapic(APIC_REGISTER_TIMER_DIV, APIC_GET_DIVIDER(3));    // divider set to 16.
     size_t hpet_tick_to_wait = hpet_ms_to_tick(10);
     hpet_reset();
     cpuWriteLapic(APIC_REGISTER_TIMER_INITCNT, (uint32_t)-1); // Max count.
@@ -141,12 +141,12 @@ timer_calibration_t calibrate_apic_timer(int hz)
     LOG_INFO("10 ms represent {d} ticks", cpu_wait_tick);
     uint64_t tick_for_hz = (cpu_wait_tick * 100) / hz; // (tick_in_10_ms * 100hz)/expected hz
     #if OPTIMIZE_TICK_COUNT
-    tick_for_hz *= 2; // base divider is 2.
+    tick_for_hz *= divider_to_value(APIC_GET_DIVIDER(3)); // base divider is 16.
     uint32_t divider = find_best_divider(tick_for_hz);
     LOG_INFO("divider {d}", divider);
     timer_calibration_t calibration = {.divider = divider, .tick_to_wait = tick_for_hz / divider_to_value(divider)};
     #else
-    timer_calibration_t calibration = {.divider = APIC_GET_DIVIDER(0), .tick_to_wait = tick_for_hz};
+    timer_calibration_t calibration = {.divider = APIC_GET_DIVIDER(3), .tick_to_wait = tick_for_hz};
     #endif
     LOG_INFO("calibration data: {.divider = {x}, .tick_to_wait = {d}}", calibration.divider, calibration.tick_to_wait);
     return calibration;
